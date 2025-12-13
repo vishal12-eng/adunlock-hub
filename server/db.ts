@@ -17,6 +17,9 @@ if (connectionString.includes('channel_binding=require')) {
 
 export const pool = new Pool({ 
   connectionString,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
+  connectionTimeoutMillis: 15000,
+  idleTimeoutMillis: 10000,
+  max: 10,
 });
 export const db = drizzle(pool, { schema });
