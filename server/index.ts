@@ -70,19 +70,6 @@ async function startServer() {
   app.use((req, res, next) => {
     if (req.method === "GET" && isPrivateRoute(req.path)) {
       res.setHeader("X-Robots-Tag", "noindex, nofollow");
-      res.status(404).send(`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="robots" content="noindex, nofollow">
-  <title>404 Not Found</title>
-</head>
-<body>
-  <h1>404 Not Found</h1>
-  <p>The requested URL was not found on this server.</p>
-</body>
-</html>`);
-      return;
     }
     next();
   });
