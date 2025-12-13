@@ -1,6 +1,8 @@
-import { pgTable, text, integer, boolean, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, boolean, timestamp, uuid, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+export const roleEnum = pgEnum("user_role", ["admin", "editor"]);
 
 export const contents = pgTable("contents", {
   id: uuid("id").primaryKey().defaultRandom(),
