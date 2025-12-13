@@ -22,9 +22,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/unlock/:contentId" element={<UnlockPage />} />
-            <Route path="/admin/auth" element={<AdminAuth />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/panel-adnexus-9f3x/login" element={<AdminAuth />} />
+            <Route path="/panel-adnexus-9f3x" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -45,6 +45,13 @@ export const adminUsers = pgTable("admin_users", {
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const userRoles = pgTable("user_roles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: uuid("user_id").references(() => adminUsers.id, { onDelete: "cascade" }).notNull(),
+  role: roleEnum("role").notNull().default("editor"),
+  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const insertContentSchema = createInsertSchema(contents).omit({
   id: true,
   views: true,
@@ -70,6 +77,11 @@ export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({
   created_at: true,
 });
 
+export const insertUserRoleSchema = createInsertSchema(userRoles).omit({
+  id: true,
+  created_at: true,
+});
+
 export type InsertContent = z.infer<typeof insertContentSchema>;
 export type Content = typeof contents.$inferSelect;
 
@@ -81,3 +93,6 @@ export type SiteSetting = typeof siteSettings.$inferSelect;
 
 export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
 export type AdminUser = typeof adminUsers.$inferSelect;
+
+export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
+export type UserRole = typeof userRoles.$inferSelect;

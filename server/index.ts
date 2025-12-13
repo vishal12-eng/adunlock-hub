@@ -3,10 +3,10 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { registerRoutes } from "./routes";
+import { storage } from "./storage";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,6 +36,7 @@ app.use(
 );
 
 async function startServer() {
+  await storage.seedDefaultAdmin();
   await registerRoutes(app);
 
   if (process.env.NODE_ENV === "production") {

@@ -1,4 +1,4 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { storage } from "./storage";
 import { insertContentSchema, insertUserSessionSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
@@ -7,13 +7,21 @@ declare module "express-session" {
   interface SessionData {
     adminId?: string;
     adminEmail?: string;
+    adminRole?: string;
   }
 }
 
-function requireAdmin(req: Request, res: Response, next: () => void) {
+async function requireAdmin(req: Request, res: Response, next: NextFunction) {
   if (!req.session.adminId) {
-    return res.status(401).json({ error: "Unauthorized" });
+    return res.status(404).json({ error: "Not found" });
   }
+
+  const role = await storage.getAdminRole(req.session.adminId);
+  if (!role || role.role !== "admin") {
+    req.session.destroy(() => {});
+    return res.status(404).json({ error: "Not found" });
+  }
+
   next();
 }
 
@@ -96,8 +104,14 @@ export async function registerRoutes(app: Express) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    const role = await storage.getAdminRole(admin.id);
+    if (!role || role.role !== "admin") {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     req.session.adminId = admin.id;
     req.session.adminEmail = admin.email;
+    req.session.adminRole = role.role;
 
     res.json({ id: admin.id, email: admin.email });
   });
@@ -111,33 +125,18 @@ export async function registerRoutes(app: Express) {
     });
   });
 
-  app.get("/api/auth/me", (req, res) => {
+  app.get("/api/auth/me", async (req, res) => {
     if (req.session.adminId) {
-      res.json({ id: req.session.adminId, email: req.session.adminEmail });
+      const role = await storage.getAdminRole(req.session.adminId);
+      if (role && role.role === "admin") {
+        res.json({ id: req.session.adminId, email: req.session.adminEmail });
+      } else {
+        req.session.destroy(() => {});
+        res.json(null);
+      }
     } else {
       res.json(null);
     }
-  });
-
-  app.post("/api/auth/setup", async (req, res) => {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password required" });
-    }
-
-    const existingAdmin = await storage.getAdminByEmail(email);
-    if (existingAdmin) {
-      return res.status(400).json({ error: "Admin already exists" });
-    }
-
-    const password_hash = await bcrypt.hash(password, 10);
-    const admin = await storage.createAdmin({ email, password_hash });
-
-    req.session.adminId = admin.id;
-    req.session.adminEmail = admin.email;
-
-    res.json({ id: admin.id, email: admin.email });
   });
 
   app.get("/api/admin/contents", requireAdmin, async (_req, res) => {

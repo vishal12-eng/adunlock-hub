@@ -17,15 +17,6 @@ export function Header() {
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Watch Ads. Unlock Content.</p>
           </div>
         </Link>
-
-        <nav className="flex items-center gap-4">
-          <Link 
-            to="/admin" 
-            className="text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            Admin
-          </Link>
-        </nav>
       </div>
     </header>
   );

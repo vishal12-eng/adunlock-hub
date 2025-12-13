@@ -38,8 +38,6 @@ export const api = {
     fetchApi<AdminUser>("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
   logout: () => fetchApi<void>("/api/auth/logout", { method: "POST" }),
   getMe: () => fetchApi<AdminUser | null>("/api/auth/me"),
-  setupAdmin: (email: string, password: string) =>
-    fetchApi<AdminUser>("/api/auth/setup", { method: "POST", body: JSON.stringify({ email, password }) }),
 
   admin: {
     getContents: () => fetchApi<Content[]>("/api/admin/contents"),

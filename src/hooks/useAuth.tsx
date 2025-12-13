@@ -6,7 +6,6 @@ interface AuthContextType {
   isAdmin: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -41,16 +40,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function signUp(email: string, password: string) {
-    try {
-      const admin = await api.setupAdmin(email, password);
-      setUser(admin);
-      return { error: null };
-    } catch (error) {
-      return { error: error as Error };
-    }
-  }
-
   async function signOut() {
     try {
       await api.logout();
@@ -65,7 +54,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin: !!user,
       isLoading,
       signIn,
-      signUp,
       signOut
     }}>
       {children}

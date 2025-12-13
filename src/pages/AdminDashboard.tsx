@@ -46,7 +46,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/admin/auth');
+      navigate('/panel-adnexus-9f3x/login');
     }
   }, [user, authLoading, navigate]);
 
@@ -105,7 +105,7 @@ export default function AdminDashboard() {
 
   async function handleSignOut() {
     await signOut();
-    navigate('/admin/auth');
+    navigate('/panel-adnexus-9f3x/login');
   }
 
   if (authLoading || loading) {

@@ -1,7 +1,8 @@
 import { db } from "./db";
-import { contents, userSessions, siteSettings, adminUsers } from "@shared/schema";
-import type { Content, InsertContent, UserSession, InsertUserSession, SiteSetting, InsertSiteSetting, AdminUser, InsertAdminUser } from "@shared/schema";
+import { contents, userSessions, siteSettings, adminUsers, userRoles } from "@shared/schema";
+import type { Content, InsertContent, UserSession, InsertUserSession, SiteSetting, AdminUser, InsertAdminUser, UserRole } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 export interface IStorage {
   getActiveContents(): Promise<Content[]>;
@@ -23,6 +24,8 @@ export interface IStorage {
 
   getAdminByEmail(email: string): Promise<AdminUser | undefined>;
   createAdmin(data: InsertAdminUser): Promise<AdminUser>;
+  getAdminRole(userId: string): Promise<UserRole | undefined>;
+  seedDefaultAdmin(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -126,6 +129,36 @@ export class DatabaseStorage implements IStorage {
   async createAdmin(data: InsertAdminUser): Promise<AdminUser> {
     const [admin] = await db.insert(adminUsers).values(data).returning();
     return admin;
+  }
+
+  async getAdminRole(userId: string): Promise<UserRole | undefined> {
+    const [role] = await db.select().from(userRoles).where(eq(userRoles.user_id, userId));
+    return role;
+  }
+
+  async seedDefaultAdmin(): Promise<void> {
+    const existingAdmin = await this.getAdminByEmail("adnexus64@gmail.com");
+    if (!existingAdmin) {
+      const password_hash = await bcrypt.hash("Adnexus@64", 10);
+      const admin = await this.createAdmin({
+        email: "adnexus64@gmail.com",
+        password_hash,
+      });
+      await db.insert(userRoles).values({
+        user_id: admin.id,
+        role: "admin",
+      });
+      console.log("Default admin user seeded successfully");
+    } else {
+      const existingRole = await this.getAdminRole(existingAdmin.id);
+      if (!existingRole) {
+        await db.insert(userRoles).values({
+          user_id: existingAdmin.id,
+          role: "admin",
+        });
+        console.log("Admin role assigned to existing admin");
+      }
+    }
   }
 }
 
