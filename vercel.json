@@ -20,10 +20,10 @@
   "routes": [
     { "src": "/robots.txt", "dest": "/robots.txt" },
     { "src": "/favicon.ico", "dest": "/favicon.ico" },
-
     { "src": "/sitemap.xml", "dest": "/api/sitemap" },
     { "src": "/api/(.*)", "dest": "/api/index" },
-
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
