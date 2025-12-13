@@ -2,6 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { storage } from "./storage";
 import { insertContentSchema, insertUserSessionSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
+import { DOMAIN } from "./seo";
 
 declare module "express-session" {
   interface SessionData {
@@ -196,5 +197,39 @@ export async function registerRoutes(app: Express) {
       results.push(setting);
     }
     res.json(results);
+  });
+
+  app.get("/sitemap.xml", async (_req, res) => {
+    const contents = await storage.getActiveContents();
+    const now = new Date().toISOString().split("T")[0];
+
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${DOMAIN}/</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>`;
+
+    for (const content of contents) {
+      const lastmod = content.updated_at
+        ? new Date(content.updated_at).toISOString().split("T")[0]
+        : now;
+      xml += `
+  <url>
+    <loc>${DOMAIN}/unlock/${content.id}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+    }
+
+    xml += `
+</urlset>`;
+
+    res.set("Content-Type", "application/xml");
+    res.set("Cache-Control", "public, max-age=3600");
+    res.send(xml);
   });
 }

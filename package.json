@@ -7,6 +7,8 @@
     "dev": "tsx server/index.ts",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "build:vercel": "vite build",
+    "start": "node dist/server/index.js",
     "lint": "eslint .",
     "preview": "vite preview",
     "db:push": "drizzle-kit push",
