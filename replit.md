@@ -4,6 +4,15 @@
 
 ADNEXUS is a content locker web application that allows users to unlock premium content (files, downloads, redirects) by watching a required number of advertisements. The platform includes a public-facing content gallery, an unlock flow with ad tracking, and a full admin dashboard for content and settings management.
 
+## Admin Access
+
+- **Secret Admin URL**: `/panel-adnexus-9f3x/login`
+- **Admin Email**: adnexus64@gmail.com
+- **Admin Password**: Adnexus@64
+- Admin button is hidden from the public frontend
+- Unauthorized access returns 404 (not 403) for security
+- Role-based access control via `user_roles` table
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
