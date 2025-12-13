@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Upload, Link, Loader2, FileBox } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { api, ContentFormData } from '@/lib/api';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -71,7 +71,6 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    // Validate
     const result = contentSchema.safeParse({
       ...formData,
       required_ads: Number(formData.required_ads)
@@ -85,7 +84,7 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
     setLoading(true);
 
     try {
-      const payload = {
+      const payload: ContentFormData = {
         title: formData.title,
         description: formData.description || null,
         thumbnail_url: formData.thumbnail_url || null,
@@ -96,27 +95,17 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
       };
 
       if (content) {
-        // Update existing
-        const { error } = await supabase
-          .from('contents')
-          .update(payload)
-          .eq('id', content.id);
-
-        if (error) throw error;
+        await api.admin.updateContent(content.id, payload);
         toast.success('Content updated successfully');
       } else {
-        // Create new
-        const { error } = await supabase
-          .from('contents')
-          .insert(payload);
-
-        if (error) throw error;
+        await api.admin.createContent(payload);
         toast.success('Content created successfully');
       }
 
       onSuccess();
     } catch (error) {
-      toast.error('Failed to save content');
+      const message = error instanceof Error ? error.message : 'Failed to save content';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -126,15 +115,12 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-background/80 backdrop-blur-md"
         onClick={onClose}
       />
       
-      {/* Modal */}
       <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto glass-intense rounded-2xl animate-scale-in">
-        {/* Header */}
         <div className="sticky top-0 glass-intense border-b border-border px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
@@ -152,9 +138,7 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Title */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Title *</label>
             <input
@@ -167,7 +151,6 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
             />
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Description</label>
             <textarea
@@ -179,7 +162,6 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
             />
           </div>
 
-          {/* Thumbnail URL */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground flex items-center gap-2">
               <Upload className="w-4 h-4" />
@@ -204,7 +186,6 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
             )}
           </div>
 
-          {/* File URL */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground flex items-center gap-2">
               <Upload className="w-4 h-4" />
@@ -220,7 +201,6 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
             <p className="text-xs text-muted-foreground">Direct download link for files (APK, ZIP, PDF, etc.)</p>
           </div>
 
-          {/* Redirect URL */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground flex items-center gap-2">
               <Link className="w-4 h-4" />
@@ -236,7 +216,6 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
             <p className="text-xs text-muted-foreground">External page to redirect after unlock (takes priority over file)</p>
           </div>
 
-          {/* Required Ads */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Required Ads to Unlock *</label>
             <input
@@ -250,7 +229,6 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
             <p className="text-xs text-muted-foreground">Number of ads user must watch (1-20)</p>
           </div>
 
-          {/* Status */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Status</label>
             <div className="flex gap-4">
@@ -279,7 +257,6 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3 pt-4">
             <button
               type="button"

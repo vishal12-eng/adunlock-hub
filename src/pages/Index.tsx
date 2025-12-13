@@ -3,18 +3,8 @@ import { Header } from '@/components/Header';
 import { ContentCard } from '@/components/ContentCard';
 import { UnlockModal } from '@/components/UnlockModal';
 import { AdBanner } from '@/components/AdBanner';
-import { supabase } from '@/integrations/supabase/client';
+import { api, Content } from '@/lib/api';
 import { Zap, TrendingUp, Shield } from 'lucide-react';
-
-interface Content {
-  id: string;
-  title: string;
-  description: string | null;
-  thumbnail_url: string | null;
-  required_ads: number;
-  views: number;
-  unlocks: number;
-}
 
 export default function Index() {
   const [contents, setContents] = useState<Content[]>([]);
@@ -26,14 +16,11 @@ export default function Index() {
   }, []);
 
   async function fetchContents() {
-    const { data, error } = await supabase
-      .from('contents')
-      .select('*')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false });
-
-    if (!error && data) {
+    try {
+      const data = await api.getContents();
       setContents(data);
+    } catch (error) {
+      console.error('Failed to fetch contents:', error);
     }
     setLoading(false);
   }
@@ -42,7 +29,6 @@ export default function Index() {
     setSelectedContent(content);
   }
 
-  // Insert ad banners between content
   function renderContentWithAds() {
     const items: JSX.Element[] = [];
     
@@ -61,7 +47,6 @@ export default function Index() {
         />
       );
 
-      // Insert ad every 4 items
       if ((index + 1) % 4 === 0 && index < contents.length - 1) {
         items.push(
           <div key={`ad-${index}`} className="col-span-full">
@@ -78,7 +63,6 @@ export default function Index() {
     <div className="min-h-screen">
       <Header />
       
-      {/* Hero Section */}
       <section className="pt-32 pb-16 px-4">
         <div className="container mx-auto text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 glass rounded-full animate-fade-in">
@@ -95,7 +79,6 @@ export default function Index() {
             Watch a few ads to get instant access to exclusive downloads, files, and premium resources.
           </p>
 
-          {/* Features */}
           <div className="flex flex-wrap justify-center gap-4 pt-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center gap-2 px-4 py-2 glass rounded-full">
               <TrendingUp className="w-4 h-4 text-primary" />
@@ -113,14 +96,12 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Ad Banner */}
       <section className="px-4 pb-8">
         <div className="container mx-auto">
           <AdBanner className="max-w-4xl mx-auto h-28" />
         </div>
       </section>
 
-      {/* Content Grid */}
       <section className="px-4 pb-20">
         <div className="container mx-auto">
           <div className="flex items-center justify-between mb-8">
@@ -158,7 +139,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-border py-8 px-4">
         <div className="container mx-auto text-center">
           <p className="text-sm text-muted-foreground">
@@ -167,7 +147,6 @@ export default function Index() {
         </div>
       </footer>
 
-      {/* Unlock Modal */}
       {selectedContent && (
         <UnlockModal
           isOpen={!!selectedContent}

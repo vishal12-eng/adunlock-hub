@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { api, Content } from '@/lib/api';
 import { 
   Zap, 
   LayoutDashboard, 
@@ -20,20 +20,6 @@ import {
 import { toast } from 'sonner';
 import { ContentFormModal } from '@/components/admin/ContentFormModal';
 import { SettingsPanel } from '@/components/admin/SettingsPanel';
-
-interface Content {
-  id: string;
-  title: string;
-  description: string | null;
-  thumbnail_url: string | null;
-  file_url: string | null;
-  redirect_url: string | null;
-  required_ads: number;
-  status: string;
-  views: number;
-  unlocks: number;
-  created_at: string;
-}
 
 interface Stats {
   totalContents: number;
@@ -73,16 +59,10 @@ export default function AdminDashboard() {
   async function fetchData() {
     setLoading(true);
     
-    // Fetch all contents (admin can see all)
-    const { data: contentsData } = await supabase
-      .from('contents')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (contentsData) {
+    try {
+      const contentsData = await api.admin.getContents();
       setContents(contentsData);
       
-      // Calculate stats
       const totalViews = contentsData.reduce((sum, c) => sum + c.views, 0);
       const totalUnlocks = contentsData.reduce((sum, c) => sum + c.unlocks, 0);
       
@@ -90,8 +70,10 @@ export default function AdminDashboard() {
         totalContents: contentsData.length,
         totalViews,
         totalUnlocks,
-        estimatedEarnings: totalUnlocks * 0.05 // Rough estimate
+        estimatedEarnings: totalUnlocks * 0.05
       });
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
     }
 
     setLoading(false);
@@ -100,32 +82,24 @@ export default function AdminDashboard() {
   async function handleDeleteContent(id: string) {
     if (!confirm('Are you sure you want to delete this content?')) return;
 
-    const { error } = await supabase
-      .from('contents')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      toast.error('Failed to delete content');
-    } else {
+    try {
+      await api.admin.deleteContent(id);
       toast.success('Content deleted');
       fetchData();
+    } catch (error) {
+      toast.error('Failed to delete content');
     }
   }
 
   async function handleToggleStatus(content: Content) {
     const newStatus = content.status === 'active' ? 'inactive' : 'active';
     
-    const { error } = await supabase
-      .from('contents')
-      .update({ status: newStatus })
-      .eq('id', content.id);
-
-    if (error) {
-      toast.error('Failed to update status');
-    } else {
+    try {
+      await api.admin.updateContent(content.id, { status: newStatus });
       toast.success(`Content ${newStatus === 'active' ? 'activated' : 'deactivated'}`);
       fetchData();
+    } catch (error) {
+      toast.error('Failed to update status');
     }
   }
 
@@ -156,6 +130,7 @@ export default function AdminDashboard() {
           <button
             onClick={handleSignOut}
             className="btn-neon"
+            data-testid="button-signout"
           >
             Sign Out
           </button>
@@ -166,9 +141,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Sidebar */}
       <aside className="w-64 glass-intense border-r border-border p-6 flex flex-col">
-        {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
           <div className="w-10 h-10 rounded-lg bg-gradient-neon flex items-center justify-center">
             <Zap className="w-6 h-6 text-primary-foreground" />
@@ -179,7 +152,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 space-y-2">
           <button
             onClick={() => setActiveTab('dashboard')}
@@ -188,6 +160,7 @@ export default function AdminDashboard() {
                 ? 'bg-primary text-primary-foreground' 
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             }`}
+            data-testid="nav-dashboard"
           >
             <LayoutDashboard className="w-5 h-5" />
             Dashboard
@@ -199,6 +172,7 @@ export default function AdminDashboard() {
                 ? 'bg-primary text-primary-foreground' 
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             }`}
+            data-testid="nav-contents"
           >
             <FileBox className="w-5 h-5" />
             Content Manager
@@ -210,18 +184,19 @@ export default function AdminDashboard() {
                 ? 'bg-primary text-primary-foreground' 
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             }`}
+            data-testid="nav-settings"
           >
             <Settings className="w-5 h-5" />
             Ad Settings
           </button>
         </nav>
 
-        {/* User & Logout */}
         <div className="pt-4 border-t border-border">
           <p className="text-xs text-muted-foreground mb-2 truncate">{user?.email}</p>
           <button
             onClick={handleSignOut}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
+            data-testid="button-logout"
           >
             <LogOut className="w-5 h-5" />
             Sign Out
@@ -229,7 +204,6 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 p-8 overflow-auto">
         {activeTab === 'dashboard' && (
           <div className="space-y-8">
@@ -238,7 +212,6 @@ export default function AdminDashboard() {
               <p className="text-muted-foreground">Overview of your content platform</p>
             </div>
 
-            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="glass rounded-2xl p-6">
                 <div className="flex items-center gap-4">
@@ -247,7 +220,7 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Contents</p>
-                    <p className="text-2xl font-bold text-foreground">{stats.totalContents}</p>
+                    <p className="text-2xl font-bold text-foreground" data-testid="stat-contents">{stats.totalContents}</p>
                   </div>
                 </div>
               </div>
@@ -258,7 +231,7 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Views</p>
-                    <p className="text-2xl font-bold text-foreground">{stats.totalViews}</p>
+                    <p className="text-2xl font-bold text-foreground" data-testid="stat-views">{stats.totalViews}</p>
                   </div>
                 </div>
               </div>
@@ -269,7 +242,7 @@ export default function AdminDashboard() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Unlocks</p>
-                    <p className="text-2xl font-bold text-foreground">{stats.totalUnlocks}</p>
+                    <p className="text-2xl font-bold text-foreground" data-testid="stat-unlocks">{stats.totalUnlocks}</p>
                   </div>
                 </div>
               </div>
@@ -286,7 +259,6 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Recent Content */}
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-4">Recent Content</h3>
               <div className="glass rounded-2xl overflow-hidden">
@@ -343,13 +315,13 @@ export default function AdminDashboard() {
                   setShowContentModal(true);
                 }}
                 className="btn-neon flex items-center gap-2"
+                data-testid="button-add-content"
               >
                 <Plus className="w-5 h-5" />
                 Add Content
               </button>
             </div>
 
-            {/* Content Table */}
             <div className="glass rounded-2xl overflow-hidden">
               <table className="w-full">
                 <thead className="bg-muted/50">
@@ -434,12 +406,14 @@ export default function AdminDashboard() {
                               setShowContentModal(true);
                             }}
                             className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                            data-testid={`button-edit-${content.id}`}
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteContent(content.id)}
                             className="p-2 rounded-lg hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
+                            data-testid={`button-delete-${content.id}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -469,7 +443,6 @@ export default function AdminDashboard() {
         )}
       </main>
 
-      {/* Content Form Modal */}
       <ContentFormModal
         isOpen={showContentModal}
         onClose={() => {

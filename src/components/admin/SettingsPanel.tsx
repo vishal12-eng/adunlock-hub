@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Settings, Save, Loader2, ExternalLink } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 import { toast } from 'sonner';
 
 export function SettingsPanel() {
@@ -16,16 +16,11 @@ export function SettingsPanel() {
   }, []);
 
   async function fetchSettings() {
-    const { data } = await supabase
-      .from('site_settings')
-      .select('key, value');
-
-    if (data) {
-      const settingsMap: Record<string, string> = {};
-      data.forEach(item => {
-        settingsMap[item.key] = item.value || '';
-      });
-      setSettings(prev => ({ ...prev, ...settingsMap }));
+    try {
+      const data = await api.admin.getSettings();
+      setSettings(prev => ({ ...prev, ...data }));
+    } catch (error) {
+      console.error('Failed to fetch settings:', error);
     }
     setLoading(false);
   }
@@ -34,21 +29,7 @@ export function SettingsPanel() {
     setSaving(true);
 
     try {
-      // Update each setting
-      for (const [key, value] of Object.entries(settings)) {
-        const { error } = await supabase
-          .from('site_settings')
-          .update({ value })
-          .eq('key', key);
-
-        if (error) {
-          // If update fails, try insert
-          await supabase
-            .from('site_settings')
-            .insert({ key, value });
-        }
-      }
-
+      await api.admin.updateSettings(settings);
       toast.success('Settings saved successfully');
     } catch {
       toast.error('Failed to save settings');
@@ -72,7 +53,6 @@ export function SettingsPanel() {
         <p className="text-muted-foreground">Configure Adsterra integration and ad behavior</p>
       </div>
 
-      {/* Adsterra Configuration */}
       <div className="glass rounded-2xl p-6 space-y-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
@@ -113,7 +93,6 @@ export function SettingsPanel() {
         </div>
       </div>
 
-      {/* Default Settings */}
       <div className="glass rounded-2xl p-6 space-y-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
@@ -145,7 +124,6 @@ export function SettingsPanel() {
         </div>
       </div>
 
-      {/* Instructions */}
       <div className="glass rounded-2xl p-6 space-y-4">
         <h3 className="font-semibold text-foreground">How It Works</h3>
         <div className="space-y-3 text-sm text-muted-foreground">
@@ -167,7 +145,6 @@ export function SettingsPanel() {
         </div>
       </div>
 
-      {/* Save Button */}
       <div className="flex justify-end">
         <button
           onClick={handleSave}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 
 interface AdBannerProps {
   className?: string;
@@ -10,14 +10,13 @@ export function AdBanner({ className = '' }: AdBannerProps) {
 
   useEffect(() => {
     async function fetchSmartlink() {
-      const { data } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'adsterra_smartlink')
-        .maybeSingle();
-      
-      if (data?.value) {
-        setSmartlink(data.value);
+      try {
+        const { value } = await api.getSetting('adsterra_smartlink');
+        if (value) {
+          setSmartlink(value);
+        }
+      } catch {
+        // Setting not found, leave empty
       }
     }
     fetchSmartlink();
