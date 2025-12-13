@@ -39,10 +39,13 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+app.set("trust proxy", 1);
+
 const PgStore = connectPgSimple(session);
 
 app.use(
   session({
+    name: "adnexus.sid",
     store: new PgStore({
       pool: pool,
       tableName: "session",
@@ -52,7 +55,9 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
+      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     },
   })
