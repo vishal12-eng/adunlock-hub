@@ -67,3 +67,44 @@ Preferred communication style: Simple, everyday language.
 ### Build & Development
 - **Lovable**: Project originated from Lovable platform with component tagging in development
 - **Drizzle Kit**: Database schema push via `npm run db:push`, studio via `npm run db:studio`
+
+## SEO Implementation
+
+### Technical SEO
+- **SEO Helper**: `server/seo.ts` provides centralized meta tag generation
+- **robots.txt**: Blocks `/admin`, `/panel`, `/panel-adnexus-9f3x`, `/api` from crawlers
+- **XML Sitemap**: Dynamic `/sitemap.xml` endpoint includes only public pages
+- **Canonical URL**: `https://adnexus.app` used throughout
+
+### Security Headers
+- X-Content-Type-Options: nosniff
+- X-Frame-Options: SAMEORIGIN
+- X-XSS-Protection: 1; mode=block
+- Referrer-Policy: strict-origin-when-cross-origin
+- X-Robots-Tag: noindex, nofollow (for private routes)
+
+### JSON-LD Structured Data
+- WebSite schema with search action
+- Organization schema
+- SoftwareApplication schema
+
+### Private Route Protection
+- `/admin`, `/panel`, `/panel-adnexus-9f3x` return 404 (not 403 or redirects)
+- API admin routes (`/api/admin/*`) also return 404 for unauthorized access
+- Never indexed by search engines
+
+## Vercel Deployment
+
+### Configuration Files
+- **vercel.json**: Serverless routing configuration
+- **api/index.ts**: Main Express app serverless entry point
+- **api/sitemap.ts**: Dedicated sitemap serverless function
+
+### Environment Variables Required
+- `DATABASE_URL`: PostgreSQL connection string
+- `SESSION_SECRET`: Session encryption key
+- `NODE_ENV`: Set to "production" for Vercel
+
+### Build Commands
+- `npm run build`: Standard Vite build
+- `npm run build:vercel`: Production build for Vercel deployment
