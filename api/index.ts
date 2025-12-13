@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { pool } from "../server/db";
@@ -47,10 +47,31 @@ app.use(
   })
 );
 
-(async () => {
-  await storage.seedDefaultAdmin();
-  await registerRoutes(app);
-})();
+let initialized = false;
+let initPromise: Promise<void> | null = null;
+
+async function initialize() {
+  if (initialized) return;
+  if (initPromise) return initPromise;
+  
+  initPromise = (async () => {
+    await storage.seedDefaultAdmin();
+    await registerRoutes(app);
+    initialized = true;
+  })();
+  
+  return initPromise;
+}
+
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await initialize();
+    next();
+  } catch (error) {
+    console.error("Initialization error:", error);
+    res.status(500).json({ error: "Server initialization failed" });
+  }
+});
 
 const distPath = path.resolve(__dirname, "../dist");
 app.use(express.static(distPath, {
