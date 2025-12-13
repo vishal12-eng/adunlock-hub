@@ -1,18 +1,29 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/index.ts", "use": "@vercel/node" },
-    { "src": "api/sitemap.ts", "use": "@vercel/node" },
-    { "src": "public/**", "use": "@vercel/static" }
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    },
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/sitemap.ts",
+      "use": "@vercel/node"
+    }
   ],
   "routes": [
-    { "src": "/robots.txt", "dest": "/public/robots.txt" },
-    { "src": "/favicon.ico", "dest": "/public/favicon.ico" },
+    { "src": "/robots.txt", "dest": "/robots.txt" },
+    { "src": "/favicon.ico", "dest": "/favicon.ico" },
+
     { "src": "/sitemap.xml", "dest": "/api/sitemap" },
     { "src": "/api/(.*)", "dest": "/api/index" },
-    { "src": "/(.*)", "dest": "/api/index" }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }
