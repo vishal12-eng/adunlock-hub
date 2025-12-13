@@ -89,32 +89,42 @@ export async function registerRoutes(app: Express) {
   });
 
   app.post("/api/auth/login", async (req, res) => {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password required" });
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        console.log("[AUTH] Login attempt missing email or password");
+        return res.status(400).json({ error: "Email and password required" });
+      }
+
+      const admin = await storage.getAdminByEmail(email);
+      if (!admin) {
+        console.log(`[AUTH] Admin not found for email: ${email}`);
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const valid = await bcrypt.compare(password, admin.password_hash);
+      if (!valid) {
+        console.log(`[AUTH] Password mismatch for email: ${email}`);
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const role = await storage.getAdminRole(admin.id);
+      if (!role || role.role !== "admin") {
+        console.log(`[AUTH] Role mismatch for admin: ${admin.id}, role: ${role?.role}`);
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      req.session.adminId = admin.id;
+      req.session.adminEmail = admin.email;
+      req.session.adminRole = role.role;
+
+      console.log(`[AUTH] Login successful for: ${email}`);
+      res.json({ id: admin.id, email: admin.email });
+    } catch (error) {
+      console.error("[AUTH] Login error:", error);
+      return res.status(500).json({ error: "Internal server error" });
     }
-
-    const admin = await storage.getAdminByEmail(email);
-    if (!admin) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    const valid = await bcrypt.compare(password, admin.password_hash);
-    if (!valid) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    const role = await storage.getAdminRole(admin.id);
-    if (!role || role.role !== "admin") {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    req.session.adminId = admin.id;
-    req.session.adminEmail = admin.email;
-    req.session.adminRole = role.role;
-
-    res.json({ id: admin.id, email: admin.email });
   });
 
   app.post("/api/auth/logout", (req, res) => {

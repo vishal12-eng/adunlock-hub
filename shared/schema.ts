@@ -38,11 +38,11 @@ export const siteSettings = pgTable("site_settings", {
   updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const adminUsers = pgTable("admin_users", {
+export const adminUsers = pgTable("admins", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").unique().notNull(),
   password_hash: text("password_hash").notNull(),
-  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  created_at: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const userRoles = pgTable("user_roles", {
