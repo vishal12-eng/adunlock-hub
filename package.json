@@ -15,9 +15,6 @@
   },
 
   "dependencies": {
-    "vite": "^5.4.19",
-    "@vitejs/plugin-react-swc": "^3.11.0",
-
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@hookform/resolvers": "^3.10.0",
 
@@ -59,7 +56,6 @@
     "connect-pg-simple": "^10.0.0",
     "date-fns": "^3.6.0",
 
-    "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
 
@@ -83,6 +79,10 @@
     "recharts": "^2.15.4",
     "sonner": "^1.7.4",
 
+    "tailwindcss": "^3.4.17",
+    "postcss": "^8.5.6",
+    "autoprefixer": "^10.4.21",
+
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
 
@@ -92,6 +92,11 @@
   },
 
   "devDependencies": {
+    "vite": "^5.4.19",
+    "@vitejs/plugin-react-swc": "^3.11.0",
+
+    "drizzle-kit": "^0.31.8",
+
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
 
@@ -104,15 +109,12 @@
     "@types/connect-pg-simple": "^7.0.3",
     "@types/pg": "^8.16.0",
 
-    "autoprefixer": "^10.4.21",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
 
     "lovable-tagger": "^1.1.13",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
 
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0"
