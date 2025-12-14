@@ -52,47 +52,55 @@ export const userRoles = pgTable("user_roles", {
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const insertContentSchema = createInsertSchema(contents).omit({
-  id: true,
-  views: true,
-  unlocks: true,
-  created_at: true,
-  updated_at: true,
+const baseContentSchema = createInsertSchema(contents);
+export const insertContentSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional().nullable(),
+  thumbnail_url: z.string().optional().nullable(),
+  file_url: z.string().optional().nullable(),
+  redirect_url: z.string().optional().nullable(),
+  required_ads: z.number().int().min(0).default(3),
+  status: z.string().default("active"),
 });
 
-export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
-  id: true,
-  created_at: true,
-  updated_at: true,
+const baseUserSessionSchema = createInsertSchema(userSessions);
+export const insertUserSessionSchema = z.object({
+  session_id: z.string().min(1, "Session ID is required"),
+  content_id: z.string().uuid("Content ID must be a valid UUID"),
+  ads_required: z.number().int().min(0),
+  ads_watched: z.number().int().min(0).default(0),
+  completed: z.boolean().default(false),
 });
 
-export const insertSiteSettingSchema = createInsertSchema(siteSettings).omit({
-  id: true,
-  created_at: true,
-  updated_at: true,
+const baseSiteSettingSchema = createInsertSchema(siteSettings);
+export const insertSiteSettingSchema = z.object({
+  key: z.string().min(1, "Key is required"),
+  value: z.string().optional().nullable(),
 });
 
-export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({
-  id: true,
-  created_at: true,
+const baseAdminUserSchema = createInsertSchema(adminUsers);
+export const insertAdminUserSchema = z.object({
+  email: z.string().email("Valid email is required"),
+  password_hash: z.string().min(1, "Password hash is required"),
 });
 
-export const insertUserRoleSchema = createInsertSchema(userRoles).omit({
-  id: true,
-  created_at: true,
+const baseUserRoleSchema = createInsertSchema(userRoles);
+export const insertUserRoleSchema = z.object({
+  user_id: z.string().uuid("User ID must be a valid UUID"),
+  role: z.enum(["admin", "editor"]).default("editor"),
 });
 
 export type Content = typeof contents.$inferSelect;
-export type InsertContent = typeof contents.$inferInsert;
+export type InsertContent = z.infer<typeof insertContentSchema>;
 
 export type UserSession = typeof userSessions.$inferSelect;
-export type InsertUserSession = typeof userSessions.$inferInsert;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
 
 export type SiteSetting = typeof siteSettings.$inferSelect;
-export type InsertSiteSetting = typeof siteSettings.$inferInsert;
+export type InsertSiteSetting = z.infer<typeof insertSiteSettingSchema>;
 
 export type AdminUser = typeof adminUsers.$inferSelect;
-export type InsertAdminUser = typeof adminUsers.$inferInsert;
+export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
 
 export type UserRole = typeof userRoles.$inferSelect;
-export type InsertUserRole = typeof userRoles.$inferInsert;
+export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
