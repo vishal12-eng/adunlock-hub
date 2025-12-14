@@ -93,7 +93,33 @@ Preferred communication style: Simple, everyday language.
 - API admin routes (`/api/admin/*`) also return 404 for unauthorized access
 - Never indexed by search engines
 
-## Vercel Deployment
+## Railway Deployment (Recommended)
+
+### Build & Start Commands
+- **Build Command**: `npm run build`
+- **Start Command**: `npm run start`
+
+### Environment Variables Required
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string (Neon/Railway) |
+| `SESSION_SECRET` | Session encryption key (generate secure random string) |
+| `NODE_ENV` | Set to `production` |
+| `PORT` | Auto-set by Railway |
+| `FRONTEND_URL` | Your Railway domain (e.g., `https://adunlock-hub-production.up.railway.app`) |
+
+### Session Configuration for Railway
+- Uses `trust proxy: 1` for Railway's reverse proxy
+- Cookies: `secure: true`, `sameSite: none`, `httpOnly: true`
+- Sessions explicitly saved before response to prevent race conditions
+- PostgreSQL session store via connect-pg-simple
+
+### Key Files
+- **server/index.ts**: Main Express server with CORS and session config
+- **tsconfig.server.json**: TypeScript config for server compilation
+- **dist/server/server/index.js**: Compiled production entry point
+
+## Vercel Deployment (Legacy)
 
 ### Configuration Files
 - **vercel.json**: Serverless routing configuration

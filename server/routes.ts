@@ -149,8 +149,16 @@ export function registerRoutes(app: Express): void {
       req.session.adminEmail = admin.email;
       req.session.adminRole = role.role;
 
-      console.log(`[AUTH] Login successful for: ${email}`);
-      res.json({ id: admin.id, email: admin.email });
+      // Explicitly save session before responding - critical for Railway's reverse proxy
+      req.session.save((err) => {
+        if (err) {
+          console.error("[AUTH] Session save error:", err);
+          res.status(500).json({ error: "Failed to create session" });
+          return;
+        }
+        console.log(`[AUTH] Login successful for: ${email}, session saved`);
+        res.json({ id: admin.id, email: admin.email });
+      });
     } catch (error) {
       console.error("[AUTH] Login error:", error);
       res.status(500).json({ error: "Internal server error" });
@@ -168,16 +176,34 @@ export function registerRoutes(app: Express): void {
   });
 
   app.get("/api/auth/me", async (req: Request, res: Response) => {
-    if (req.session.adminId) {
+    try {
+      // Guard against missing session object
+      if (!req.session) {
+        console.log("[AUTH] /me called without session object");
+        res.status(401).json({ error: "No session" });
+        return;
+      }
+
+      // Check if user is logged in
+      if (!req.session.adminId) {
+        res.json(null);
+        return;
+      }
+
+      // Verify role is still valid
       const role = await storage.getAdminRole(req.session.adminId);
       if (role && role.role === "admin") {
         res.json({ id: req.session.adminId, email: req.session.adminEmail });
       } else {
-        req.session.destroy(() => {});
+        // Role no longer valid, destroy session
+        req.session.destroy((err) => {
+          if (err) console.error("[AUTH] Session destroy error:", err);
+        });
         res.json(null);
       }
-    } else {
-      res.json(null);
+    } catch (error) {
+      console.error("[AUTH] /me error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
