@@ -4,7 +4,6 @@ import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db.js";
 import { registerRoutes } from "./routes.js";
 import { storage } from "./storage.js";
-import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import { isPrivateRoute } from "./seo.js";
@@ -13,8 +12,37 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 5000;
+const PORT = parseInt(process.env.PORT || "5000", 10);
+const isProduction = process.env.NODE_ENV === "production";
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://adnexus.app";
 
+// CORS middleware for cross-origin requests
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [FRONTEND_URL, "https://adnexus.app", "http://localhost:5000", "http://localhost:3000"];
+  
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else if (!origin) {
+    // Same-origin requests don't have Origin header
+    res.setHeader("Access-Control-Allow-Origin", FRONTEND_URL);
+  }
+  
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie");
+  res.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
+  
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
+  }
+  
+  next();
+});
+
+// Security headers
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
@@ -27,11 +55,13 @@ app.use((req, res, next) => {
     res.setHeader("X-Robots-Tag", "noindex, nofollow");
   }
   
-  if (process.env.NODE_ENV === "production" && req.headers["x-forwarded-proto"] !== "https") {
+  if (isProduction && req.headers["x-forwarded-proto"] !== "https") {
     if (isPrivate) {
-      return res.status(404).json({ error: "Not found" });
+      res.status(404).json({ error: "Not found" });
+      return;
     }
-    return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    res.redirect(301, `https://${req.headers.host}${req.url}`);
+    return;
   }
   
   next();
@@ -54,51 +84,67 @@ app.use(
     secret: process.env.SESSION_SECRET || "content-locker-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
+    proxy: isProduction,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      domain: isProduction ? undefined : undefined,
     },
   })
 );
 
 async function startServer() {
-  await storage.seedDefaultAdmin();
-  registerRoutes(app);
+  try {
+    console.log(`Starting server in ${isProduction ? "production" : "development"} mode...`);
+    console.log(`PORT: ${PORT}`);
+    console.log(`DATABASE_URL configured: ${!!process.env.DATABASE_URL}`);
+    
+    await storage.seedDefaultAdmin();
+    registerRoutes(app);
 
-  app.use((req, res, next) => {
-    if (req.method === "GET" && isPrivateRoute(req.path)) {
-      res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    app.use((req, res, next) => {
+      if (req.method === "GET" && isPrivateRoute(req.path)) {
+        res.setHeader("X-Robots-Tag", "noindex, nofollow");
+      }
+      next();
+    });
+
+    if (isProduction) {
+      // In production, __dirname is dist/server/server, so we go up 2 levels to reach dist
+      const distPath = path.resolve(__dirname, "../../");
+      console.log(`Serving static files from: ${distPath}`);
+      app.use(express.static(distPath, {
+        maxAge: "1d",
+        etag: true,
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith(".html")) {
+            res.setHeader("Cache-Control", "no-cache");
+          }
+        },
+      }));
+      app.get("*", (_req, res) => {
+        res.sendFile(path.join(distPath, "index.html"));
+      });
+    } else {
+      // Dynamic import for Vite - only in development
+      const { createServer: createViteServer } = await import("vite");
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
     }
-    next();
-  });
 
-  if (process.env.NODE_ENV === "production") {
-    const distPath = path.resolve(__dirname, "../dist");
-    app.use(express.static(distPath, {
-      maxAge: "1d",
-      etag: true,
-      setHeaders: (res, filePath) => {
-        if (filePath.endsWith(".html")) {
-          res.setHeader("Cache-Control", "no-cache");
-        }
-      },
-    }));
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Environment: ${isProduction ? "production" : "development"}`);
     });
-  } else {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
   }
-
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT}`);
-  });
 }
 
-startServer().catch(console.error);
+startServer();

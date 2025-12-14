@@ -1,4 +1,4 @@
-const DOMAIN = "https://adnexus.app";
+const DOMAIN = process.env.FRONTEND_URL || "https://adnexus.app";
 const SITE_NAME = "ADNEXUS";
 const DEFAULT_DESCRIPTION = "Unlock premium content by watching a few ads. Fast, secure, and no sign-up required. Download exclusive files, APKs, and more.";
 const DEFAULT_IMAGE = `${DOMAIN}/og-image.png`;
