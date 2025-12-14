@@ -46,6 +46,11 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction): Pr
 }
 
 export function registerRoutes(app: Express): void {
+  // Health check endpoint for Render
+  app.get("/api/health", (_req: Request, res: Response) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   app.get("/api/contents", async (_req: Request, res: Response) => {
     const contents = await storage.getActiveContents();
     res.json(contents);

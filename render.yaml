@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: adnexus
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+    healthCheckPath: /api/health
