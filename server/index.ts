@@ -14,33 +14,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
 const isProduction = process.env.NODE_ENV === "production";
-const FRONTEND_URL = process.env.FRONTEND_URL || "https://adnexus.app";
 
-// CORS middleware for cross-origin requests
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = [FRONTEND_URL, "https://adnexus.app", "http://localhost:5000", "http://localhost:3000"];
-  
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  } else if (!origin) {
-    // Same-origin requests don't have Origin header
-    res.setHeader("Access-Control-Allow-Origin", FRONTEND_URL);
-  }
-  
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie");
-  res.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
-  
-  // Handle preflight requests
-  if (req.method === "OPTIONS") {
-    res.status(200).end();
-    return;
-  }
-  
-  next();
-});
+// CRITICAL: Trust Railway's reverse proxy for secure cookies
+app.set("trust proxy", 1);
 
 // Security headers
 app.use((req, res, next) => {
@@ -55,23 +31,17 @@ app.use((req, res, next) => {
     res.setHeader("X-Robots-Tag", "noindex, nofollow");
   }
   
-  if (isProduction && req.headers["x-forwarded-proto"] !== "https") {
-    if (isPrivate) {
-      res.status(404).json({ error: "Not found" });
-      return;
-    }
-    res.redirect(301, `https://${req.headers.host}${req.url}`);
-    return;
-  }
-  
   next();
 });
 
 app.use(express.json());
 
-app.set("trust proxy", 1);
-
 const PgStore = connectPgSimple(session);
+
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret) {
+  throw new Error("SESSION_SECRET environment variable is required");
+}
 
 app.use(
   session({
@@ -81,15 +51,16 @@ app.use(
       tableName: "session",
       createTableIfMissing: true,
     }),
-    secret: process.env.SESSION_SECRET || "content-locker-secret-key-change-in-production",
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
-    proxy: isProduction,
+    proxy: true,
     cookie: {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
     },
   })
 );
@@ -99,6 +70,7 @@ async function startServer() {
     console.log(`Starting server in ${isProduction ? "production" : "development"} mode...`);
     console.log(`PORT: ${PORT}`);
     console.log(`DATABASE_URL configured: ${!!process.env.DATABASE_URL}`);
+    console.log(`SESSION_SECRET configured: ${!!process.env.SESSION_SECRET}`);
     
     await storage.seedDefaultAdmin();
     registerRoutes(app);

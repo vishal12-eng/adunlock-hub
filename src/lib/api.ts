@@ -37,7 +37,7 @@ export const api = {
   login: (email: string, password: string) =>
     fetchApi<AdminUser>("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
   logout: () => fetchApi<void>("/api/auth/logout", { method: "POST" }),
-  getMe: () => fetchApi<AdminUser | null>("/api/auth/me"),
+  getMe: () => fetchApi<{ loggedIn: boolean; user: AdminUser }>("/api/auth/me"),
 
   admin: {
     getContents: () => fetchApi<Content[]>("/api/admin/contents"),

@@ -7,9 +7,10 @@ import { z } from "zod";
 
 declare module "express-session" {
   interface SessionData {
-    adminId?: string;
-    adminEmail?: string;
-    adminRole?: string;
+    user?: {
+      id: string;
+      email: string;
+    };
   }
 }
 
@@ -29,12 +30,12 @@ const settingSchema = z.object({
 });
 
 async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
-  if (!req.session.adminId) {
+  if (!req.session.user) {
     res.status(404).json({ error: "Not found" });
     return;
   }
 
-  const role = await storage.getAdminRole(req.session.adminId);
+  const role = await storage.getAdminRole(req.session.user.id);
   if (!role || role.role !== "admin") {
     req.session.destroy(() => {});
     res.status(404).json({ error: "Not found" });
@@ -145,9 +146,7 @@ export function registerRoutes(app: Express): void {
         return;
       }
 
-      req.session.adminId = admin.id;
-      req.session.adminEmail = admin.email;
-      req.session.adminRole = role.role;
+      req.session.user = { id: admin.id, email: admin.email };
 
       // Explicitly save session before responding - critical for Railway's reverse proxy
       req.session.save((err) => {
@@ -185,21 +184,21 @@ export function registerRoutes(app: Express): void {
       }
 
       // Check if user is logged in
-      if (!req.session.adminId) {
-        res.json(null);
+      if (!req.session.user) {
+        res.status(401).json({ error: "Not authenticated" });
         return;
       }
 
       // Verify role is still valid
-      const role = await storage.getAdminRole(req.session.adminId);
+      const role = await storage.getAdminRole(req.session.user.id);
       if (role && role.role === "admin") {
-        res.json({ id: req.session.adminId, email: req.session.adminEmail });
+        res.json({ loggedIn: true, user: req.session.user });
       } else {
         // Role no longer valid, destroy session
         req.session.destroy((err) => {
           if (err) console.error("[AUTH] Session destroy error:", err);
         });
-        res.json(null);
+        res.status(401).json({ error: "Not authenticated" });
       }
     } catch (error) {
       console.error("[AUTH] /me error:", error);
