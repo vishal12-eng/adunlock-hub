@@ -1,5 +1,4 @@
 import { pgTable, text, integer, boolean, timestamp, uuid, pgEnum } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const roleEnum = pgEnum("user_role", ["admin", "editor"]);
@@ -52,18 +51,16 @@ export const userRoles = pgTable("user_roles", {
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-const baseContentSchema = createInsertSchema(contents);
 export const insertContentSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  description: z.string().optional().nullable(),
-  thumbnail_url: z.string().optional().nullable(),
-  file_url: z.string().optional().nullable(),
-  redirect_url: z.string().optional().nullable(),
+  description: z.string().nullish(),
+  thumbnail_url: z.string().nullish(),
+  file_url: z.string().nullish(),
+  redirect_url: z.string().nullish(),
   required_ads: z.number().int().min(0).default(3),
   status: z.string().default("active"),
 });
 
-const baseUserSessionSchema = createInsertSchema(userSessions);
 export const insertUserSessionSchema = z.object({
   session_id: z.string().min(1, "Session ID is required"),
   content_id: z.string().uuid("Content ID must be a valid UUID"),
@@ -72,19 +69,16 @@ export const insertUserSessionSchema = z.object({
   completed: z.boolean().default(false),
 });
 
-const baseSiteSettingSchema = createInsertSchema(siteSettings);
 export const insertSiteSettingSchema = z.object({
   key: z.string().min(1, "Key is required"),
-  value: z.string().optional().nullable(),
+  value: z.string().nullish(),
 });
 
-const baseAdminUserSchema = createInsertSchema(adminUsers);
 export const insertAdminUserSchema = z.object({
   email: z.string().email("Valid email is required"),
   password_hash: z.string().min(1, "Password hash is required"),
 });
 
-const baseUserRoleSchema = createInsertSchema(userRoles);
 export const insertUserRoleSchema = z.object({
   user_id: z.string().uuid("User ID must be a valid UUID"),
   role: z.enum(["admin", "editor"]).default("editor"),

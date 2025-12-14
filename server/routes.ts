@@ -3,6 +3,7 @@ import { storage } from "./storage.js";
 import { insertContentSchema, insertUserSessionSchema } from "../shared/schema.js";
 import bcrypt from "bcryptjs";
 import { DOMAIN } from "./seo.js";
+import { z } from "zod";
 
 declare module "express-session" {
   interface SessionData {
@@ -12,69 +13,92 @@ declare module "express-session" {
   }
 }
 
-async function requireAdmin(req: Request, res: Response, next: NextFunction) {
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+const updateSessionSchema = z.object({
+  ads_watched: z.number().int().min(0).optional(),
+  completed: z.boolean().optional(),
+});
+
+const settingSchema = z.object({
+  key: z.string().min(1),
+  value: z.string().optional(),
+});
+
+async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
   if (!req.session.adminId) {
-    return res.status(404).json({ error: "Not found" });
+    res.status(404).json({ error: "Not found" });
+    return;
   }
 
   const role = await storage.getAdminRole(req.session.adminId);
   if (!role || role.role !== "admin") {
     req.session.destroy(() => {});
-    return res.status(404).json({ error: "Not found" });
+    res.status(404).json({ error: "Not found" });
+    return;
   }
 
   next();
 }
 
-export async function registerRoutes(app: Express) {
-  app.get("/api/contents", async (_req, res) => {
+export async function registerRoutes(app: Express): Promise<void> {
+  app.get("/api/contents", async (_req: Request, res: Response) => {
     const contents = await storage.getActiveContents();
     res.json(contents);
   });
 
-  app.get("/api/contents/:id", async (req, res) => {
+  app.get("/api/contents/:id", async (req: Request, res: Response) => {
     const content = await storage.getContentById(req.params.id);
     if (!content) {
-      return res.status(404).json({ error: "Content not found" });
+      res.status(404).json({ error: "Content not found" });
+      return;
     }
     res.json(content);
   });
 
-  app.post("/api/contents/:id/view", async (req, res) => {
+  app.post("/api/contents/:id/view", async (req: Request, res: Response) => {
     await storage.incrementContentViews(req.params.id);
     res.json({ success: true });
   });
 
-  app.get("/api/sessions/:sessionId/:contentId", async (req, res) => {
+  app.get("/api/sessions/:sessionId/:contentId", async (req: Request, res: Response) => {
     const session = await storage.getSession(req.params.sessionId, req.params.contentId);
     res.json(session || null);
   });
 
-  app.post("/api/sessions", async (req, res) => {
+  app.post("/api/sessions", async (req: Request, res: Response) => {
     try {
       const data = insertUserSessionSchema.parse(req.body);
       const session = await storage.createSession(data);
       res.json(session);
-    } catch (error) {
+    } catch {
       res.status(400).json({ error: "Invalid session data" });
     }
   });
 
-  app.patch("/api/sessions/:id", async (req, res) => {
-    const { ads_watched, completed } = req.body;
-    const session = await storage.updateSession(req.params.id, { ads_watched, completed });
-    if (!session) {
-      return res.status(404).json({ error: "Session not found" });
+  app.patch("/api/sessions/:id", async (req: Request, res: Response) => {
+    try {
+      const data = updateSessionSchema.parse(req.body);
+      const session = await storage.updateSession(req.params.id, data);
+      if (!session) {
+        res.status(404).json({ error: "Session not found" });
+        return;
+      }
+      res.json(session);
+    } catch {
+      res.status(400).json({ error: "Invalid session data" });
     }
-    res.json(session);
   });
 
-  app.post("/api/contents/:id/unlock", async (req, res) => {
+  app.post("/api/contents/:id/unlock", async (req: Request, res: Response) => {
     await storage.incrementContentUnlocks(req.params.id);
     res.json({ success: true });
   });
 
-  app.get("/api/settings", async (_req, res) => {
+  app.get("/api/settings", async (_req: Request, res: Response) => {
     const settings = await storage.getAllSettings();
     const settingsMap: Record<string, string> = {};
     settings.forEach(s => {
@@ -83,36 +107,42 @@ export async function registerRoutes(app: Express) {
     res.json(settingsMap);
   });
 
-  app.get("/api/settings/:key", async (req, res) => {
+  app.get("/api/settings/:key", async (req: Request, res: Response) => {
     const setting = await storage.getSetting(req.params.key);
     res.json(setting ? { value: setting.value } : { value: "" });
   });
 
-  app.post("/api/auth/login", async (req, res) => {
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
-      const { email, password } = req.body;
+      const parseResult = loginSchema.safeParse(req.body);
       
-      if (!email || !password) {
-        console.log("[AUTH] Login attempt missing email or password");
-        return res.status(400).json({ error: "Email and password required" });
+      if (!parseResult.success) {
+        console.log("[AUTH] Login attempt with invalid input");
+        res.status(400).json({ error: "Email and password required" });
+        return;
       }
+
+      const { email, password } = parseResult.data;
 
       const admin = await storage.getAdminByEmail(email);
       if (!admin) {
         console.log(`[AUTH] Admin not found for email: ${email}`);
-        return res.status(401).json({ error: "Invalid credentials" });
+        res.status(401).json({ error: "Invalid credentials" });
+        return;
       }
 
       const valid = await bcrypt.compare(password, admin.password_hash);
       if (!valid) {
         console.log(`[AUTH] Password mismatch for email: ${email}`);
-        return res.status(401).json({ error: "Invalid credentials" });
+        res.status(401).json({ error: "Invalid credentials" });
+        return;
       }
 
       const role = await storage.getAdminRole(admin.id);
       if (!role || role.role !== "admin") {
         console.log(`[AUTH] Role mismatch for admin: ${admin.id}, role: ${role?.role}`);
-        return res.status(401).json({ error: "Unauthorized" });
+        res.status(401).json({ error: "Unauthorized" });
+        return;
       }
 
       req.session.adminId = admin.id;
@@ -123,20 +153,21 @@ export async function registerRoutes(app: Express) {
       res.json({ id: admin.id, email: admin.email });
     } catch (error) {
       console.error("[AUTH] Login error:", error);
-      return res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
-  app.post("/api/auth/logout", (req, res) => {
+  app.post("/api/auth/logout", (req: Request, res: Response) => {
     req.session.destroy((err) => {
       if (err) {
-        return res.status(500).json({ error: "Failed to logout" });
+        res.status(500).json({ error: "Failed to logout" });
+        return;
       }
       res.json({ success: true });
     });
   });
 
-  app.get("/api/auth/me", async (req, res) => {
+  app.get("/api/auth/me", async (req: Request, res: Response) => {
     if (req.session.adminId) {
       const role = await storage.getAdminRole(req.session.adminId);
       if (role && role.role === "admin") {
@@ -150,38 +181,46 @@ export async function registerRoutes(app: Express) {
     }
   });
 
-  app.get("/api/admin/contents", requireAdmin, async (_req, res) => {
+  app.get("/api/admin/contents", requireAdmin, async (_req: Request, res: Response) => {
     const contents = await storage.getAllContents();
     res.json(contents);
   });
 
-  app.post("/api/admin/contents", requireAdmin, async (req, res) => {
+  app.post("/api/admin/contents", requireAdmin, async (req: Request, res: Response) => {
     try {
       const data = insertContentSchema.parse(req.body);
       const content = await storage.createContent(data);
       res.json(content);
-    } catch (error) {
+    } catch {
       res.status(400).json({ error: "Invalid content data" });
     }
   });
 
-  app.patch("/api/admin/contents/:id", requireAdmin, async (req, res) => {
-    const content = await storage.updateContent(req.params.id, req.body);
-    if (!content) {
-      return res.status(404).json({ error: "Content not found" });
+  app.patch("/api/admin/contents/:id", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const partialSchema = insertContentSchema.partial();
+      const data = partialSchema.parse(req.body);
+      const content = await storage.updateContent(req.params.id, data);
+      if (!content) {
+        res.status(404).json({ error: "Content not found" });
+        return;
+      }
+      res.json(content);
+    } catch {
+      res.status(400).json({ error: "Invalid content data" });
     }
-    res.json(content);
   });
 
-  app.delete("/api/admin/contents/:id", requireAdmin, async (req, res) => {
+  app.delete("/api/admin/contents/:id", requireAdmin, async (req: Request, res: Response) => {
     const deleted = await storage.deleteContent(req.params.id);
     if (!deleted) {
-      return res.status(404).json({ error: "Content not found" });
+      res.status(404).json({ error: "Content not found" });
+      return;
     }
     res.json({ success: true });
   });
 
-  app.get("/api/admin/settings", requireAdmin, async (_req, res) => {
+  app.get("/api/admin/settings", requireAdmin, async (_req: Request, res: Response) => {
     const settings = await storage.getAllSettings();
     const settingsMap: Record<string, string> = {};
     settings.forEach(s => {
@@ -190,26 +229,32 @@ export async function registerRoutes(app: Express) {
     res.json(settingsMap);
   });
 
-  app.post("/api/admin/settings", requireAdmin, async (req, res) => {
-    const { key, value } = req.body;
-    if (!key) {
-      return res.status(400).json({ error: "Key required" });
+  app.post("/api/admin/settings", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const data = settingSchema.parse(req.body);
+      const setting = await storage.upsertSetting(data.key, data.value || "");
+      res.json(setting);
+    } catch {
+      res.status(400).json({ error: "Key required" });
     }
-    const setting = await storage.upsertSetting(key, value || "");
-    res.json(setting);
   });
 
-  app.post("/api/admin/settings/bulk", requireAdmin, async (req, res) => {
-    const settings = req.body;
-    const results: unknown[] = [];
-    for (const [key, value] of Object.entries(settings)) {
-      const setting = await storage.upsertSetting(key, (value as string) || "");
-      results.push(setting);
+  app.post("/api/admin/settings/bulk", requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const settingsSchema = z.record(z.string(), z.string());
+      const settings = settingsSchema.parse(req.body);
+      const results: unknown[] = [];
+      for (const [key, value] of Object.entries(settings)) {
+        const setting = await storage.upsertSetting(key, value || "");
+        results.push(setting);
+      }
+      res.json(results);
+    } catch {
+      res.status(400).json({ error: "Invalid settings data" });
     }
-    res.json(results);
   });
 
-  app.get("/sitemap.xml", async (_req, res) => {
+  app.get("/sitemap.xml", async (_req: Request, res: Response) => {
     const contents = await storage.getActiveContents();
     const now = new Date().toISOString().split("T")[0];
 
