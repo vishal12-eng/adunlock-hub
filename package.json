@@ -87,12 +87,13 @@
     "tailwindcss-animate": "^1.0.7",
 
     "tsx": "^4.21.0",
+    "typescript": "^5.8.3",
     "vaul": "^0.9.9",
+    "vite": "^5.4.19",
     "zod": "^3.25.76"
   },
 
   "devDependencies": {
-    "vite": "^5.4.19",
     "@vitejs/plugin-react-swc": "^3.11.0",
 
     "drizzle-kit": "^0.31.8",
@@ -116,7 +117,6 @@
 
     "lovable-tagger": "^1.1.13",
 
-    "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0"
   }
 }
