@@ -65,7 +65,7 @@ app.use(
 
 async function startServer() {
   await storage.seedDefaultAdmin();
-  await registerRoutes(app);
+  registerRoutes(app);
 
   app.use((req, res, next) => {
     if (req.method === "GET" && isPrivateRoute(req.path)) {

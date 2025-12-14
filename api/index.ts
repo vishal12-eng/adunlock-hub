@@ -4,7 +4,6 @@ import connectPgSimple from "connect-pg-simple";
 import { pool } from "../server/db.js";
 import { registerRoutes } from "../server/routes.js";
 import { storage } from "../server/storage.js";
-import { isPrivateRoute } from "../server/seo.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -13,9 +12,10 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+app.set("trust proxy", 1);
 app.use(express.json());
 
-app.use((req, res, next) => {
+app.use((_req: Request, res: Response, next: NextFunction) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("X-XSS-Protection", "1; mode=block");
@@ -24,8 +24,6 @@ app.use((req, res, next) => {
 });
 
 const PgStore = connectPgSimple(session);
-
-app.set("trust proxy", 1);
 
 app.use(
   session({
@@ -47,31 +45,21 @@ app.use(
   })
 );
 
-let initialized = false;
-let initPromise: Promise<void> | null = null;
+let seeded = false;
 
-async function initialize() {
-  if (initialized) return;
-  if (initPromise) return initPromise;
-  
-  initPromise = (async () => {
-    await storage.seedDefaultAdmin();
-    await registerRoutes(app);
-    initialized = true;
-  })();
-  
-  return initPromise;
-}
-
-app.use(async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    await initialize();
-    next();
-  } catch (error) {
-    console.error("Initialization error:", error);
-    res.status(500).json({ error: "Server initialization failed" });
+app.use(async (_req: Request, _res: Response, next: NextFunction) => {
+  if (!seeded) {
+    try {
+      await storage.seedDefaultAdmin();
+      seeded = true;
+    } catch (error) {
+      console.error("Seed error:", error);
+    }
   }
+  next();
 });
+
+registerRoutes(app);
 
 const distPath = path.resolve(__dirname, "../dist");
 app.use(express.static(distPath, {
@@ -79,27 +67,7 @@ app.use(express.static(distPath, {
   etag: true,
 }));
 
-app.use((req, res, next) => {
-  if (req.method === "GET" && isPrivateRoute(req.path)) {
-    res.setHeader("X-Robots-Tag", "noindex, nofollow");
-    res.status(404).send(`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="robots" content="noindex, nofollow">
-  <title>404 Not Found</title>
-</head>
-<body>
-  <h1>404 Not Found</h1>
-  <p>The requested URL was not found on this server.</p>
-</body>
-</html>`);
-    return;
-  }
-  next();
-});
-
-app.get("*", (_req, res) => {
+app.get("*", (_req: Request, res: Response) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 

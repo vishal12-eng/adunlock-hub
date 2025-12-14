@@ -44,7 +44,7 @@ async function requireAdmin(req: Request, res: Response, next: NextFunction): Pr
   next();
 }
 
-export async function registerRoutes(app: Express): Promise<void> {
+export function registerRoutes(app: Express): void {
   app.get("/api/contents", async (_req: Request, res: Response) => {
     const contents = await storage.getActiveContents();
     res.json(contents);
