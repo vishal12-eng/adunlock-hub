@@ -1,6 +1,6 @@
-import { db } from "./db";
-import { contents, userSessions, siteSettings, adminUsers, userRoles } from "@shared/schema";
-import type { Content, InsertContent, UserSession, InsertUserSession, SiteSetting, AdminUser, InsertAdminUser, UserRole } from "@shared/schema";
+import { db } from "./db.js";
+import { contents, userSessions, siteSettings, adminUsers, userRoles } from "../shared/schema.js";
+import type { Content, InsertContent, UserSession, InsertUserSession, SiteSetting, AdminUser, InsertAdminUser, UserRole } from "../shared/schema.js";
 import { eq, and, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 

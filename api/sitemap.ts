@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { pool } from "../server/db";
-import { DOMAIN } from "../server/seo";
+import { pool } from "../server/db.js";
+import { DOMAIN } from "../server/seo.js";
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   try {

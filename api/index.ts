@@ -1,10 +1,10 @@
 import express, { Request, Response, NextFunction } from "express";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-import { pool } from "../server/db";
-import { registerRoutes } from "../server/routes";
-import { storage } from "../server/storage";
-import { isPrivateRoute } from "../server/seo";
+import { pool } from "../server/db.js";
+import { registerRoutes } from "../server/routes.js";
+import { storage } from "../server/storage.js";
+import { isPrivateRoute } from "../server/seo.js";
 import path from "path";
 import { fileURLToPath } from "url";
 

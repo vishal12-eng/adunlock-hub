@@ -1,8 +1,8 @@
 import type { Express, Request, Response, NextFunction } from "express";
-import { storage } from "./storage";
-import { insertContentSchema, insertUserSessionSchema } from "@shared/schema";
+import { storage } from "./storage.js";
+import { insertContentSchema, insertUserSessionSchema } from "../shared/schema.js";
 import bcrypt from "bcryptjs";
-import { DOMAIN } from "./seo";
+import { DOMAIN } from "./seo.js";
 
 declare module "express-session" {
   interface SessionData {
