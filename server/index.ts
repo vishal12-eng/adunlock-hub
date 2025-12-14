@@ -15,7 +15,7 @@ const app = express();
 const PORT = parseInt(process.env.PORT || "5000", 10);
 const isProduction = process.env.NODE_ENV === "production";
 
-// CRITICAL: Trust Railway's reverse proxy for secure cookies
+// CRITICAL: Trust Render's reverse proxy for secure cookies
 app.set("trust proxy", 1);
 
 // Security headers
@@ -43,6 +43,8 @@ if (!sessionSecret) {
   throw new Error("SESSION_SECRET environment variable is required");
 }
 
+// Session configuration optimized for Render (same-origin deployment)
+// Frontend and backend are served from the SAME domain, so sameSite: "lax" works
 app.use(
   session({
     name: "adnexus.sid",
@@ -58,7 +60,7 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/",
     },
