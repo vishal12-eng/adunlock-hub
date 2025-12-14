@@ -43,14 +43,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createContent(data: InsertContent): Promise<Content> {
-    const [content] = await db.insert(contents).values(data).returning();
+    const [content] = await db.insert(contents).values({
+      title: data.title,
+      description: data.description ?? null,
+      thumbnail_url: data.thumbnail_url ?? null,
+      file_url: data.file_url ?? null,
+      redirect_url: data.redirect_url ?? null,
+      required_ads: data.required_ads ?? 3,
+      status: data.status ?? "active",
+    }).returning();
     return content;
   }
 
   async updateContent(id: string, data: Partial<InsertContent>): Promise<Content | undefined> {
+    const updateData: Record<string, unknown> = { updated_at: new Date() };
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.description !== undefined) updateData.description = data.description ?? null;
+    if (data.thumbnail_url !== undefined) updateData.thumbnail_url = data.thumbnail_url ?? null;
+    if (data.file_url !== undefined) updateData.file_url = data.file_url ?? null;
+    if (data.redirect_url !== undefined) updateData.redirect_url = data.redirect_url ?? null;
+    if (data.required_ads !== undefined) updateData.required_ads = data.required_ads;
+    if (data.status !== undefined) updateData.status = data.status;
+
     const [content] = await db
       .update(contents)
-      .set({ ...data, updated_at: new Date() })
+      .set(updateData)
       .where(eq(contents.id, id))
       .returning();
     return content;
@@ -84,14 +101,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createSession(data: InsertUserSession): Promise<UserSession> {
-    const [session] = await db.insert(userSessions).values(data).returning();
+    const [session] = await db.insert(userSessions).values({
+      session_id: data.session_id,
+      content_id: data.content_id,
+      ads_required: data.ads_required,
+      ads_watched: data.ads_watched ?? 0,
+      completed: data.completed ?? false,
+    }).returning();
     return session;
   }
 
   async updateSession(id: string, data: Partial<InsertUserSession>): Promise<UserSession | undefined> {
+    const updateData: Record<string, unknown> = { updated_at: new Date() };
+    if (data.ads_watched !== undefined) updateData.ads_watched = data.ads_watched;
+    if (data.completed !== undefined) updateData.completed = data.completed;
+
     const [session] = await db
       .update(userSessions)
-      .set({ ...data, updated_at: new Date() })
+      .set(updateData)
       .where(eq(userSessions.id, id))
       .returning();
     return session;
@@ -116,7 +143,10 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return setting;
     } else {
-      const [setting] = await db.insert(siteSettings).values({ key, value }).returning();
+      const [setting] = await db.insert(siteSettings).values({
+        key: key,
+        value: value,
+      }).returning();
       return setting;
     }
   }
@@ -127,7 +157,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAdmin(data: InsertAdminUser): Promise<AdminUser> {
-    const [admin] = await db.insert(adminUsers).values(data).returning();
+    const [admin] = await db.insert(adminUsers).values({
+      email: data.email,
+      password_hash: data.password_hash,
+    }).returning();
     return admin;
   }
 
