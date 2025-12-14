@@ -1,5 +1,18 @@
 const BASE_URL = "";
 
+class ApiError extends Error {
+  status: number;
+  code?: string;
+  wait_seconds?: number;
+
+  constructor(message: string, status: number, code?: string, wait_seconds?: number) {
+    super(message);
+    this.status = status;
+    this.code = code;
+    this.wait_seconds = wait_seconds;
+  }
+}
+
 async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${url}`, {
     ...options,
@@ -11,12 +24,19 @@ async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: "Request failed" }));
-    throw new Error(error.error || "Request failed");
+    const errorData = await res.json().catch(() => ({ error: "Request failed" }));
+    throw new ApiError(
+      errorData.message || errorData.error || "Request failed",
+      res.status,
+      errorData.error,
+      errorData.wait_seconds
+    );
   }
 
   return res.json();
 }
+
+export { ApiError };
 
 export const api = {
   getContents: () => fetchApi<Content[]>("/api/contents"),

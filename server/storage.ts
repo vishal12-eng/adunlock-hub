@@ -31,7 +31,7 @@ export interface IStorage {
   createAdAttempt(sessionId: string, contentId: string, userSessionId: string): Promise<AdAttempt>;
   getAdAttemptByToken(token: string): Promise<AdAttempt | undefined>;
   markAdAttemptUsed(token: string): Promise<AdAttempt | undefined>;
-  getLastAdAttempt(sessionId: string, contentId: string): Promise<AdAttempt | undefined>;
+  getLastCompletedAdAttempt(sessionId: string, contentId: string): Promise<AdAttempt | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -227,15 +227,16 @@ export class DatabaseStorage implements IStorage {
     return attempt;
   }
 
-  async getLastAdAttempt(sessionId: string, contentId: string): Promise<AdAttempt | undefined> {
+  async getLastCompletedAdAttempt(sessionId: string, contentId: string): Promise<AdAttempt | undefined> {
     const [attempt] = await db
       .select()
       .from(adAttempts)
       .where(and(
         eq(adAttempts.session_id, sessionId),
-        eq(adAttempts.content_id, contentId)
+        eq(adAttempts.content_id, contentId),
+        eq(adAttempts.used, true)
       ))
-      .orderBy(sql`${adAttempts.started_at} DESC`)
+      .orderBy(sql`${adAttempts.completed_at} DESC`)
       .limit(1);
     return attempt;
   }

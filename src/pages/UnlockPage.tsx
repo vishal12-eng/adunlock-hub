@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
-import { api, Content, UserSession } from '@/lib/api';
+import { api, Content, UserSession, ApiError } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
 import { 
   CheckCircle, 
@@ -119,25 +119,22 @@ export default function UnlockPage() {
       }, 1000);
 
     } catch (error: unknown) {
-      const err = error as { message?: string };
-      if (err.message?.includes('wait')) {
-        const match = err.message.match(/(\d+)/);
-        if (match) {
-          const waitTime = parseInt(match[1], 10);
-          setCooldownRemaining(waitTime);
-          cooldownRef.current = setInterval(() => {
-            setCooldownRemaining(prev => {
-              if (prev <= 1) {
-                if (cooldownRef.current) clearInterval(cooldownRef.current);
-                return 0;
-              }
-              return prev - 1;
-            });
-          }, 1000);
-        }
-        toast.error(err.message || 'Please wait before watching another ad');
+      if (error instanceof ApiError && error.code === 'cooldown') {
+        const waitTime = error.wait_seconds || 15;
+        setCooldownRemaining(waitTime);
+        cooldownRef.current = setInterval(() => {
+          setCooldownRemaining(prev => {
+            if (prev <= 1) {
+              if (cooldownRef.current) clearInterval(cooldownRef.current);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+        toast.error(error.message);
       } else {
-        toast.error('Failed to start ad');
+        const err = error as Error;
+        toast.error(err.message || 'Failed to start ad');
       }
     }
   }

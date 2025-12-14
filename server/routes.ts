@@ -122,12 +122,12 @@ export function registerRoutes(app: Express): void {
     try {
       const data = adStartSchema.parse(req.body);
       
-      // Check cooldown - 1 ad attempt per 15 seconds
-      const lastAttempt = await storage.getLastAdAttempt(data.session_id, data.content_id);
-      if (lastAttempt) {
-        const timeSinceLastAttempt = (Date.now() - new Date(lastAttempt.started_at).getTime()) / 1000;
-        if (timeSinceLastAttempt < AD_COOLDOWN_SECONDS) {
-          const waitTime = Math.ceil(AD_COOLDOWN_SECONDS - timeSinceLastAttempt);
+      // Check cooldown - 15 seconds after last completed ad
+      const lastCompleted = await storage.getLastCompletedAdAttempt(data.session_id, data.content_id);
+      if (lastCompleted && lastCompleted.completed_at) {
+        const timeSinceCompletion = (Date.now() - new Date(lastCompleted.completed_at).getTime()) / 1000;
+        if (timeSinceCompletion < AD_COOLDOWN_SECONDS) {
+          const waitTime = Math.ceil(AD_COOLDOWN_SECONDS - timeSinceCompletion);
           res.status(429).json({ 
             error: "cooldown", 
             message: `Please wait ${waitTime} seconds before watching another ad`,
