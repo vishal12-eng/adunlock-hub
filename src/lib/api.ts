@@ -34,6 +34,11 @@ export const api = {
   getSettings: () => fetchApi<Record<string, string>>("/api/settings"),
   getSetting: (key: string) => fetchApi<{ value: string }>(`/api/settings/${key}`),
 
+  startAd: (data: AdStartData) =>
+    fetchApi<AdStartResponse>("/api/ad/start", { method: "POST", body: JSON.stringify(data) }),
+  completeAd: (token: string) =>
+    fetchApi<AdCompleteResponse>("/api/ad/complete", { method: "POST", body: JSON.stringify({ token }) }),
+
   login: (email: string, password: string) =>
     fetchApi<AdminUser>("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
   logout: () => fetchApi<void>("/api/auth/logout", { method: "POST" }),
@@ -105,4 +110,22 @@ export interface ContentFormData {
   redirect_url?: string | null;
   required_ads?: number;
   status?: string;
+}
+
+export interface AdStartData {
+  session_id: string;
+  content_id: string;
+  user_session_id: string;
+}
+
+export interface AdStartResponse {
+  token: string;
+  started_at: string;
+  min_time_seconds: number;
+}
+
+export interface AdCompleteResponse {
+  success: boolean;
+  session: UserSession;
+  completed: boolean;
 }

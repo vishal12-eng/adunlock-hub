@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx server/index.ts",
     "build": "vite build && tsc -p tsconfig.server.json",
-    "start": "node dist/server/server/index.js"
+    "start": "node dist/server/server/index.js",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@fontsource/plus-jakarta-sans": "^5.2.8",

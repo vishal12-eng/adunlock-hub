@@ -24,6 +24,19 @@ const updateSessionSchema = z.object({
   completed: z.boolean().optional(),
 });
 
+const adStartSchema = z.object({
+  session_id: z.string().min(1),
+  content_id: z.string().uuid(),
+  user_session_id: z.string().uuid(),
+});
+
+const adCompleteSchema = z.object({
+  token: z.string().min(1),
+});
+
+const MIN_AD_TIME_SECONDS = 12;
+const AD_COOLDOWN_SECONDS = 15;
+
 const settingSchema = z.object({
   key: z.string().min(1),
   value: z.string().optional(),
@@ -102,6 +115,104 @@ export function registerRoutes(app: Express): void {
   app.post("/api/contents/:id/unlock", async (req: Request, res: Response) => {
     await storage.incrementContentUnlocks(req.params.id);
     res.json({ success: true });
+  });
+
+  // Ad Safety System - Start Ad Attempt
+  app.post("/api/ad/start", async (req: Request, res: Response) => {
+    try {
+      const data = adStartSchema.parse(req.body);
+      
+      // Check cooldown - 1 ad attempt per 15 seconds
+      const lastAttempt = await storage.getLastAdAttempt(data.session_id, data.content_id);
+      if (lastAttempt) {
+        const timeSinceLastAttempt = (Date.now() - new Date(lastAttempt.started_at).getTime()) / 1000;
+        if (timeSinceLastAttempt < AD_COOLDOWN_SECONDS) {
+          const waitTime = Math.ceil(AD_COOLDOWN_SECONDS - timeSinceLastAttempt);
+          res.status(429).json({ 
+            error: "cooldown", 
+            message: `Please wait ${waitTime} seconds before watching another ad`,
+            wait_seconds: waitTime
+          });
+          return;
+        }
+      }
+
+      // Create new ad attempt token
+      const attempt = await storage.createAdAttempt(data.session_id, data.content_id, data.user_session_id);
+      
+      res.json({ 
+        token: attempt.token,
+        started_at: attempt.started_at,
+        min_time_seconds: MIN_AD_TIME_SECONDS
+      });
+    } catch (error) {
+      console.error("[AD] Start error:", error);
+      res.status(400).json({ error: "Invalid request" });
+    }
+  });
+
+  // Ad Safety System - Complete Ad Attempt
+  app.post("/api/ad/complete", async (req: Request, res: Response) => {
+    try {
+      const data = adCompleteSchema.parse(req.body);
+      
+      // Get the ad attempt
+      const attempt = await storage.getAdAttemptByToken(data.token);
+      
+      if (!attempt) {
+        res.status(404).json({ error: "invalid_token", message: "Invalid or expired ad token" });
+        return;
+      }
+
+      // Check if already used
+      if (attempt.used) {
+        res.status(400).json({ error: "token_used", message: "This ad has already been counted" });
+        return;
+      }
+
+      // Check minimum time elapsed
+      const timeElapsed = (Date.now() - new Date(attempt.started_at).getTime()) / 1000;
+      if (timeElapsed < MIN_AD_TIME_SECONDS) {
+        const remainingTime = Math.ceil(MIN_AD_TIME_SECONDS - timeElapsed);
+        res.status(400).json({ 
+          error: "too_fast", 
+          message: `Please watch the ad for ${remainingTime} more seconds`,
+          remaining_seconds: remainingTime
+        });
+        return;
+      }
+
+      // Mark token as used
+      await storage.markAdAttemptUsed(data.token);
+
+      // Get current session and increment ads_watched
+      const session = await storage.getSession(attempt.session_id, attempt.content_id);
+      if (!session) {
+        res.status(404).json({ error: "session_not_found", message: "Session not found" });
+        return;
+      }
+
+      const newAdsWatched = session.ads_watched + 1;
+      const isCompleted = newAdsWatched >= session.ads_required;
+
+      const updatedSession = await storage.updateSession(session.id, {
+        ads_watched: newAdsWatched,
+        completed: isCompleted,
+      });
+
+      if (isCompleted) {
+        await storage.incrementContentUnlocks(attempt.content_id);
+      }
+
+      res.json({ 
+        success: true, 
+        session: updatedSession,
+        completed: isCompleted
+      });
+    } catch (error) {
+      console.error("[AD] Complete error:", error);
+      res.status(400).json({ error: "Invalid request" });
+    }
   });
 
   app.get("/api/settings", async (_req: Request, res: Response) => {

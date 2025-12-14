@@ -51,6 +51,17 @@ export const userRoles = pgTable("user_roles", {
   created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const adAttempts = pgTable("ad_attempts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  token: text("token").unique().notNull(),
+  session_id: text("session_id").notNull(),
+  content_id: uuid("content_id").references(() => contents.id, { onDelete: "cascade" }).notNull(),
+  user_session_id: uuid("user_session_id").references(() => userSessions.id, { onDelete: "cascade" }).notNull(),
+  started_at: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+  used: boolean("used").notNull().default(false),
+  completed_at: timestamp("completed_at", { withTimezone: true }),
+});
+
 export const insertContentSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().nullish(),
@@ -98,3 +109,5 @@ export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
 
 export type UserRole = typeof userRoles.$inferSelect;
 export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
+
+export type AdAttempt = typeof adAttempts.$inferSelect;

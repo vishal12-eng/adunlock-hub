@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { api, Content, UserSession } from '@/lib/api';
@@ -10,9 +10,12 @@ import {
   Loader2,
   ArrowLeft,
   Download,
-  Play
+  Play,
+  Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+const MIN_AD_TIME_SECONDS = 12;
 
 export default function UnlockPage() {
   const { contentId } = useParams<{ contentId: string }>();
@@ -21,8 +24,16 @@ export default function UnlockPage() {
   const [content, setContent] = useState<Content | null>(null);
   const [session, setSession] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
-  const [watchingAd, setWatchingAd] = useState(false);
   const [smartlink, setSmartlink] = useState('');
+  
+  const [adToken, setAdToken] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(0);
+  const [adStartedAt, setAdStartedAt] = useState<number | null>(null);
+  const [completing, setCompleting] = useState(false);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
+  const cooldownRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!contentId) return;
@@ -69,42 +80,93 @@ export default function UnlockPage() {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+    };
+  }, []);
+
   async function handleWatchAd() {
-    if (!session || !smartlink) {
+    if (!session || !smartlink || !contentId) {
       toast.error('Ad service not configured');
       return;
     }
 
-    setWatchingAd(true);
+    const sessionId = getSessionId();
 
-    window.open(smartlink, '_blank');
+    try {
+      const response = await api.startAd({
+        session_id: sessionId,
+        content_id: contentId,
+        user_session_id: session.id
+      });
 
-    setTimeout(async () => {
-      const newAdsWatched = session.ads_watched + 1;
-      const isCompleted = newAdsWatched >= session.ads_required;
+      setAdToken(response.token);
+      setAdStartedAt(Date.now());
+      setCountdown(response.min_time_seconds);
 
-      try {
-        const updatedSession = await api.updateSession(session.id, {
-          ads_watched: newAdsWatched,
-          completed: isCompleted
-        });
+      window.open(smartlink, '_blank');
 
-        if (updatedSession) {
-          setSession(updatedSession);
-
-          if (isCompleted) {
-            await api.incrementUnlocks(contentId!);
-            toast.success('Content unlocked!');
-          } else {
-            toast.success(`Ad watched! ${session.ads_required - newAdsWatched} more to go.`);
+      countdownRef.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            if (countdownRef.current) clearInterval(countdownRef.current);
+            return 0;
           }
+          return prev - 1;
+        });
+      }, 1000);
+
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      if (err.message?.includes('wait')) {
+        const match = err.message.match(/(\d+)/);
+        if (match) {
+          const waitTime = parseInt(match[1], 10);
+          setCooldownRemaining(waitTime);
+          cooldownRef.current = setInterval(() => {
+            setCooldownRemaining(prev => {
+              if (prev <= 1) {
+                if (cooldownRef.current) clearInterval(cooldownRef.current);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
         }
-      } catch (error) {
-        toast.error('Failed to update progress');
+        toast.error(err.message || 'Please wait before watching another ad');
+      } else {
+        toast.error('Failed to start ad');
+      }
+    }
+  }
+
+  async function handleCompleteAd() {
+    if (!adToken || completing) return;
+
+    setCompleting(true);
+
+    try {
+      const response = await api.completeAd(adToken);
+      
+      setSession(response.session);
+      setAdToken(null);
+      setAdStartedAt(null);
+      setCountdown(0);
+
+      if (response.completed) {
+        toast.success('Content unlocked!');
+      } else {
+        toast.success(`Ad watched! ${response.session.ads_required - response.session.ads_watched} more to go.`);
       }
 
-      setWatchingAd(false);
-    }, 3000);
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      toast.error(err.message || 'Failed to complete ad');
+    }
+
+    setCompleting(false);
   }
 
   function handleDownload() {
@@ -131,6 +193,8 @@ export default function UnlockPage() {
 
   const progress = (session.ads_watched / session.ads_required) * 100;
   const isCompleted = session.completed;
+  const isWaitingForAd = adToken !== null;
+  const canComplete = isWaitingForAd && countdown === 0;
 
   return (
     <div className="min-h-screen">
@@ -237,17 +301,55 @@ export default function UnlockPage() {
                       </>
                     )}
                   </button>
+                ) : isWaitingForAd ? (
+                  <div className="space-y-3">
+                    {countdown > 0 && (
+                      <div className="glass rounded-xl p-4 text-center">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <Clock className="w-5 h-5 text-primary animate-pulse" />
+                          <span className="text-lg font-semibold text-foreground">Watching Ad...</span>
+                        </div>
+                        <div className="text-4xl font-bold text-primary mb-2">{countdown}s</div>
+                        <p className="text-sm text-muted-foreground">
+                          Please wait for the timer to complete
+                        </p>
+                      </div>
+                    )}
+                    <button
+                      onClick={handleCompleteAd}
+                      disabled={!canComplete || completing}
+                      className="w-full btn-neon flex items-center justify-center gap-2 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                      data-testid="button-continue"
+                    >
+                      {completing ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Verifying...
+                        </>
+                      ) : canComplete ? (
+                        <>
+                          <CheckCircle className="w-5 h-5" />
+                          Continue
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="w-5 h-5" />
+                          Wait {countdown}s
+                        </>
+                      )}
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={handleWatchAd}
-                    disabled={watchingAd || !smartlink}
+                    disabled={!smartlink || cooldownRemaining > 0}
                     className="w-full btn-neon flex items-center justify-center gap-2 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
                     data-testid="button-watch-ad"
                   >
-                    {watchingAd ? (
+                    {cooldownRemaining > 0 ? (
                       <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Watching Ad...
+                        <Clock className="w-5 h-5" />
+                        Wait {cooldownRemaining}s
                       </>
                     ) : (
                       <>

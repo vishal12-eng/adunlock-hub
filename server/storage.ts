@@ -1,8 +1,9 @@
 import { db } from "./db.js";
-import { contents, userSessions, siteSettings, adminUsers, userRoles } from "../shared/schema.js";
-import type { Content, InsertContent, UserSession, InsertUserSession, SiteSetting, AdminUser, InsertAdminUser, UserRole } from "../shared/schema.js";
-import { eq, and, sql } from "drizzle-orm";
+import { contents, userSessions, siteSettings, adminUsers, userRoles, adAttempts } from "../shared/schema.js";
+import type { Content, InsertContent, UserSession, InsertUserSession, SiteSetting, AdminUser, InsertAdminUser, UserRole, AdAttempt } from "../shared/schema.js";
+import { eq, and, sql, gt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 export interface IStorage {
   getActiveContents(): Promise<Content[]>;
@@ -26,6 +27,11 @@ export interface IStorage {
   createAdmin(data: InsertAdminUser): Promise<AdminUser>;
   getAdminRole(userId: string): Promise<UserRole | undefined>;
   seedDefaultAdmin(): Promise<void>;
+
+  createAdAttempt(sessionId: string, contentId: string, userSessionId: string): Promise<AdAttempt>;
+  getAdAttemptByToken(token: string): Promise<AdAttempt | undefined>;
+  markAdAttemptUsed(token: string): Promise<AdAttempt | undefined>;
+  getLastAdAttempt(sessionId: string, contentId: string): Promise<AdAttempt | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -192,6 +198,46 @@ export class DatabaseStorage implements IStorage {
         console.log("Admin role assigned to existing admin");
       }
     }
+  }
+
+  async createAdAttempt(sessionId: string, contentId: string, userSessionId: string): Promise<AdAttempt> {
+    const token = `ad_${crypto.randomUUID()}`;
+    const [attempt] = await db.insert(adAttempts).values({
+      token,
+      session_id: sessionId,
+      content_id: contentId,
+      user_session_id: userSessionId,
+      started_at: new Date(),
+      used: false,
+    }).returning();
+    return attempt;
+  }
+
+  async getAdAttemptByToken(token: string): Promise<AdAttempt | undefined> {
+    const [attempt] = await db.select().from(adAttempts).where(eq(adAttempts.token, token));
+    return attempt;
+  }
+
+  async markAdAttemptUsed(token: string): Promise<AdAttempt | undefined> {
+    const [attempt] = await db
+      .update(adAttempts)
+      .set({ used: true, completed_at: new Date() })
+      .where(eq(adAttempts.token, token))
+      .returning();
+    return attempt;
+  }
+
+  async getLastAdAttempt(sessionId: string, contentId: string): Promise<AdAttempt | undefined> {
+    const [attempt] = await db
+      .select()
+      .from(adAttempts)
+      .where(and(
+        eq(adAttempts.session_id, sessionId),
+        eq(adAttempts.content_id, contentId)
+      ))
+      .orderBy(sql`${adAttempts.started_at} DESC`)
+      .limit(1);
+    return attempt;
   }
 }
 
