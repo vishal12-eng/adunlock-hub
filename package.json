@@ -6,8 +6,7 @@
 
   "scripts": {
     "dev": "tsx server/index.ts",
-    "build": "vite build",
-    "postbuild": "node ./node_modules/.bin/tsc -p tsconfig.server.json",
+    "build": "vite build && tsc -p tsconfig.server.json",
     "start": "node dist/server/server/index.js",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -17,6 +16,7 @@
 
   "dependencies": {
     "vite": "^5.4.19",
+    "@vitejs/plugin-react-swc": "^3.11.0",
 
     "@fontsource/plus-jakarta-sans": "^5.2.8",
     "@hookform/resolvers": "^3.10.0",
@@ -103,8 +103,6 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/connect-pg-simple": "^7.0.3",
     "@types/pg": "^8.16.0",
-
-    "@vitejs/plugin-react-swc": "^3.11.0",
 
     "autoprefixer": "^10.4.21",
     "eslint": "^9.32.0",
