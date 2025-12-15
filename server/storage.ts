@@ -1,7 +1,7 @@
 import { db } from "./db.js";
-import { contents, userSessions, siteSettings, adminUsers, userRoles, adAttempts } from "../shared/schema.js";
-import type { Content, InsertContent, UserSession, InsertUserSession, SiteSetting, AdminUser, InsertAdminUser, UserRole, AdAttempt } from "../shared/schema.js";
-import { eq, and, sql, gt } from "drizzle-orm";
+import { contents, userSessions, siteSettings, adminUsers, userRoles, adAttempts, smartlinks } from "../shared/schema.js";
+import type { Content, InsertContent, UserSession, InsertUserSession, SiteSetting, AdminUser, InsertAdminUser, UserRole, AdAttempt, Smartlink, InsertSmartlink } from "../shared/schema.js";
+import { eq, and, sql, desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
@@ -28,10 +28,18 @@ export interface IStorage {
   getAdminRole(userId: string): Promise<UserRole | undefined>;
   seedDefaultAdmin(): Promise<void>;
 
-  createAdAttempt(sessionId: string, contentId: string, userSessionId: string): Promise<AdAttempt>;
+  createAdAttempt(sessionId: string, contentId: string, userSessionId: string, smartlinkId?: string): Promise<AdAttempt>;
   getAdAttemptByToken(token: string): Promise<AdAttempt | undefined>;
   markAdAttemptUsed(token: string): Promise<AdAttempt | undefined>;
   getLastCompletedAdAttempt(sessionId: string, contentId: string): Promise<AdAttempt | undefined>;
+  getRecentSmartlinkIds(sessionId: string, contentId: string, limit: number): Promise<string[]>;
+
+  getAllSmartlinks(): Promise<Smartlink[]>;
+  getActiveSmartlinks(): Promise<Smartlink[]>;
+  getSmartlinkById(id: string): Promise<Smartlink | undefined>;
+  createSmartlink(data: InsertSmartlink): Promise<Smartlink>;
+  updateSmartlink(id: string, data: Partial<InsertSmartlink>): Promise<Smartlink | undefined>;
+  deleteSmartlink(id: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -200,13 +208,14 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async createAdAttempt(sessionId: string, contentId: string, userSessionId: string): Promise<AdAttempt> {
+  async createAdAttempt(sessionId: string, contentId: string, userSessionId: string, smartlinkId?: string): Promise<AdAttempt> {
     const token = `ad_${crypto.randomUUID()}`;
     const [attempt] = await db.insert(adAttempts).values({
       token,
       session_id: sessionId,
       content_id: contentId,
       user_session_id: userSessionId,
+      smartlink_id: smartlinkId ?? null,
       started_at: new Date(),
       used: false,
     }).returning();
@@ -236,9 +245,65 @@ export class DatabaseStorage implements IStorage {
         eq(adAttempts.content_id, contentId),
         eq(adAttempts.used, true)
       ))
-      .orderBy(sql`${adAttempts.completed_at} DESC`)
+      .orderBy(desc(adAttempts.completed_at))
       .limit(1);
     return attempt;
+  }
+
+  async getRecentSmartlinkIds(sessionId: string, contentId: string, limit: number): Promise<string[]> {
+    const attempts = await db
+      .select({ smartlink_id: adAttempts.smartlink_id })
+      .from(adAttempts)
+      .where(and(
+        eq(adAttempts.session_id, sessionId),
+        eq(adAttempts.content_id, contentId)
+      ))
+      .orderBy(desc(adAttempts.started_at))
+      .limit(limit);
+    return attempts.map(a => a.smartlink_id).filter((id): id is string => id !== null);
+  }
+
+  async getAllSmartlinks(): Promise<Smartlink[]> {
+    return await db.select().from(smartlinks).orderBy(desc(smartlinks.created_at));
+  }
+
+  async getActiveSmartlinks(): Promise<Smartlink[]> {
+    return await db.select().from(smartlinks).where(eq(smartlinks.is_active, true));
+  }
+
+  async getSmartlinkById(id: string): Promise<Smartlink | undefined> {
+    const [link] = await db.select().from(smartlinks).where(eq(smartlinks.id, id));
+    return link;
+  }
+
+  async createSmartlink(data: InsertSmartlink): Promise<Smartlink> {
+    const [link] = await db.insert(smartlinks).values({
+      url: data.url,
+      name: data.name ?? null,
+      weight: data.weight ?? 1,
+      is_active: data.is_active ?? true,
+    }).returning();
+    return link;
+  }
+
+  async updateSmartlink(id: string, data: Partial<InsertSmartlink>): Promise<Smartlink | undefined> {
+    const updateData: Record<string, unknown> = { updated_at: new Date() };
+    if (data.url !== undefined) updateData.url = data.url;
+    if (data.name !== undefined) updateData.name = data.name ?? null;
+    if (data.weight !== undefined) updateData.weight = data.weight;
+    if (data.is_active !== undefined) updateData.is_active = data.is_active;
+
+    const [link] = await db
+      .update(smartlinks)
+      .set(updateData)
+      .where(eq(smartlinks.id, id))
+      .returning();
+    return link;
+  }
+
+  async deleteSmartlink(id: string): Promise<boolean> {
+    const result = await db.delete(smartlinks).where(eq(smartlinks.id, id)).returning();
+    return result.length > 0;
   }
 }
 

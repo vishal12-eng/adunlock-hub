@@ -24,11 +24,10 @@ export default function UnlockPage() {
   const [content, setContent] = useState<Content | null>(null);
   const [session, setSession] = useState<UserSession | null>(null);
   const [loading, setLoading] = useState(true);
-  const [smartlink, setSmartlink] = useState('');
+  const [smartlinkAvailable, setSmartlinkAvailable] = useState(true);
   
   const [adToken, setAdToken] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(0);
-  const [adStartedAt, setAdStartedAt] = useState<number | null>(null);
   const [completing, setCompleting] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   
@@ -62,11 +61,6 @@ export default function UnlockPage() {
       }
 
       setSession(sessionData);
-
-      const settings = await api.getSettings();
-      if (settings.adsterra_smartlink) {
-        setSmartlink(settings.adsterra_smartlink);
-      }
     } catch (error) {
       console.error('Failed to load content:', error);
       navigate('/');
@@ -88,8 +82,8 @@ export default function UnlockPage() {
   }, []);
 
   async function handleWatchAd() {
-    if (!session || !smartlink || !contentId) {
-      toast.error('Ad service not configured');
+    if (!session || !contentId) {
+      toast.error('Session not ready');
       return;
     }
 
@@ -102,11 +96,15 @@ export default function UnlockPage() {
         user_session_id: session.id
       });
 
+      if (!response.smartlink_url) {
+        toast.error('Ad service not configured');
+        return;
+      }
+
       setAdToken(response.token);
-      setAdStartedAt(Date.now());
       setCountdown(response.min_time_seconds);
 
-      window.open(smartlink, '_blank');
+      window.open(response.smartlink_url, '_blank');
 
       countdownRef.current = setInterval(() => {
         setCountdown(prev => {
@@ -132,6 +130,9 @@ export default function UnlockPage() {
           });
         }, 1000);
         toast.error(error.message);
+      } else if (error instanceof ApiError && error.code === 'no_smartlink') {
+        toast.error('Ad service not configured. Please contact admin.');
+        setSmartlinkAvailable(false);
       } else {
         const err = error as Error;
         toast.error(err.message || 'Failed to start ad');
@@ -149,7 +150,6 @@ export default function UnlockPage() {
       
       setSession(response.session);
       setAdToken(null);
-      setAdStartedAt(null);
       setCountdown(0);
 
       if (response.completed) {
@@ -159,7 +159,11 @@ export default function UnlockPage() {
       }
 
     } catch (error: unknown) {
-      const err = error as { message?: string };
+      const err = error as { message?: string; code?: string };
+      if (err.code === 'token_expired') {
+        setAdToken(null);
+        setCountdown(0);
+      }
       toast.error(err.message || 'Failed to complete ad');
     }
 
@@ -263,6 +267,10 @@ export default function UnlockPage() {
                   />
                 </div>
 
+                <p className="text-center text-sm text-muted-foreground">
+                  This content requires <span className="font-semibold text-primary">{session.ads_required} ads</span> to unlock
+                </p>
+
                 <div className="grid grid-cols-3 gap-4">
                   <div className="glass rounded-xl p-4 text-center">
                     <p className="text-2xl font-bold text-primary">{session.ads_required}</p>
@@ -339,7 +347,7 @@ export default function UnlockPage() {
                 ) : (
                   <button
                     onClick={handleWatchAd}
-                    disabled={!smartlink || cooldownRemaining > 0}
+                    disabled={cooldownRemaining > 0}
                     className="w-full btn-neon flex items-center justify-center gap-2 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
                     data-testid="button-watch-ad"
                   >
@@ -357,7 +365,7 @@ export default function UnlockPage() {
                   </button>
                 )}
 
-                {!smartlink && !isCompleted && (
+                {!smartlinkAvailable && !isCompleted && (
                   <p className="text-center text-sm text-destructive">
                     Ad service not configured. Please contact admin.
                   </p>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Settings, Save, Loader2, ExternalLink } from 'lucide-react';
+import { Settings, Save, Loader2, ExternalLink, AlertTriangle } from 'lucide-react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
+import { SmartlinksPanel } from './SmartlinksPanel';
 
 export function SettingsPanel() {
   const [loading, setLoading] = useState(true);
@@ -53,21 +54,23 @@ export function SettingsPanel() {
         <p className="text-muted-foreground">Configure Adsterra integration and ad behavior</p>
       </div>
 
+      <SmartlinksPanel />
+
       <div className="glass rounded-2xl p-6 space-y-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-            <Settings className="w-5 h-5 text-primary" />
+          <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-yellow-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">Adsterra Configuration</h3>
-            <p className="text-sm text-muted-foreground">Set up your Adsterra smartlink</p>
+            <h3 className="font-semibold text-foreground">Fallback Smartlink</h3>
+            <p className="text-sm text-muted-foreground">Used when no smartlinks are configured above</p>
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">
-              Adsterra Smartlink URL
+              Default Adsterra Smartlink URL
             </label>
             <input
               type="url"
@@ -77,7 +80,7 @@ export function SettingsPanel() {
               className="w-full px-4 py-3 rounded-xl bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
             <p className="text-xs text-muted-foreground">
-              Get your smartlink from your Adsterra dashboard. This link will be used for all ad interactions.
+              This is the fallback smartlink used if no smartlinks are configured in the manager above.
             </p>
           </div>
 
@@ -114,11 +117,10 @@ export function SettingsPanel() {
               value={settings.default_required_ads}
               onChange={(e) => setSettings({ ...settings, default_required_ads: e.target.value })}
               min={1}
-              max={20}
               className="w-full px-4 py-3 rounded-xl bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
             <p className="text-xs text-muted-foreground">
-              Default number of ads required to unlock new content (1-20)
+              Default number of ads required to unlock new content (no limit - can be any number)
             </p>
           </div>
         </div>
@@ -128,19 +130,19 @@ export function SettingsPanel() {
         <h3 className="font-semibold text-foreground">How It Works</h3>
         <div className="space-y-3 text-sm text-muted-foreground">
           <p>
-            <span className="font-medium text-foreground">1.</span> Get your Adsterra smartlink from your Adsterra dashboard
+            <span className="font-medium text-foreground">1.</span> Add smartlinks in the Smartlink Manager above for rotation
           </p>
           <p>
-            <span className="font-medium text-foreground">2.</span> Paste the smartlink URL above and save
+            <span className="font-medium text-foreground">2.</span> Set weights to control how often each smartlink is shown
           </p>
           <p>
-            <span className="font-medium text-foreground">3.</span> When users click "Watch Ad", they'll be redirected to your smartlink
+            <span className="font-medium text-foreground">3.</span> When users click "Watch Ad", a smartlink is selected using weighted random rotation
           </p>
           <p>
-            <span className="font-medium text-foreground">4.</span> After interacting with the ad, their progress is tracked
+            <span className="font-medium text-foreground">4.</span> The system prevents showing the same smartlink twice in a row
           </p>
           <p>
-            <span className="font-medium text-foreground">5.</span> Once all required ads are watched, content is unlocked
+            <span className="font-medium text-foreground">5.</span> After watching the required number of ads, content is unlocked
           </p>
         </div>
       </div>

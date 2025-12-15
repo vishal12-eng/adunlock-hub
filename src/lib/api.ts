@@ -53,6 +53,7 @@ export const api = {
 
   getSettings: () => fetchApi<Record<string, string>>("/api/settings"),
   getSetting: (key: string) => fetchApi<{ value: string }>(`/api/settings/${key}`),
+  getSmartlink: () => fetchApi<SmartlinkResponse>("/api/smartlink"),
 
   startAd: (data: AdStartData) =>
     fetchApi<AdStartResponse>("/api/ad/start", { method: "POST", body: JSON.stringify(data) }),
@@ -75,6 +76,14 @@ export const api = {
     getSettings: () => fetchApi<Record<string, string>>("/api/admin/settings"),
     updateSettings: (settings: Record<string, string>) =>
       fetchApi<void>("/api/admin/settings/bulk", { method: "POST", body: JSON.stringify(settings) }),
+    
+    getSmartlinks: () => fetchApi<Smartlink[]>("/api/admin/smartlinks"),
+    createSmartlink: (data: SmartlinkFormData) =>
+      fetchApi<Smartlink>("/api/admin/smartlinks", { method: "POST", body: JSON.stringify(data) }),
+    updateSmartlink: (id: string, data: Partial<SmartlinkFormData>) =>
+      fetchApi<Smartlink>(`/api/admin/smartlinks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    deleteSmartlink: (id: string) =>
+      fetchApi<void>(`/api/admin/smartlinks/${id}`, { method: "DELETE" }),
   },
 };
 
@@ -123,7 +132,7 @@ export interface UpdateSessionData {
 }
 
 export interface ContentFormData {
-  title: string;
+  title?: string;
   description?: string | null;
   thumbnail_url?: string | null;
   file_url?: string | null;
@@ -142,10 +151,34 @@ export interface AdStartResponse {
   token: string;
   started_at: string;
   min_time_seconds: number;
+  smartlink_url: string;
+  smartlink_id: string | null;
 }
 
 export interface AdCompleteResponse {
   success: boolean;
   session: UserSession;
   completed: boolean;
+}
+
+export interface Smartlink {
+  id: string;
+  url: string;
+  name: string | null;
+  weight: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SmartlinkFormData {
+  url: string;
+  name?: string | null;
+  weight?: number;
+  is_active?: boolean;
+}
+
+export interface SmartlinkResponse {
+  url: string | null;
+  id: string | null;
 }

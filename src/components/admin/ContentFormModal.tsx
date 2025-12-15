@@ -28,7 +28,7 @@ const contentSchema = z.object({
   thumbnail_url: z.string().url('Invalid URL').optional().or(z.literal('')),
   file_url: z.string().url('Invalid URL').optional().or(z.literal('')),
   redirect_url: z.string().url('Invalid URL').optional().or(z.literal('')),
-  required_ads: z.number().min(1, 'At least 1 ad required').max(20, 'Maximum 20 ads'),
+  required_ads: z.number().min(1, 'At least 1 ad required'),
   status: z.enum(['active', 'inactive'])
 });
 
@@ -223,10 +223,9 @@ export function ContentFormModal({ isOpen, onClose, content, onSuccess }: Conten
               value={formData.required_ads}
               onChange={(e) => setFormData({ ...formData, required_ads: parseInt(e.target.value) || 1 })}
               min={1}
-              max={20}
               className="w-full px-4 py-3 rounded-xl bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
-            <p className="text-xs text-muted-foreground">Number of ads user must watch (1-20)</p>
+            <p className="text-xs text-muted-foreground">Number of ads user must watch to unlock this content (no limit)</p>
           </div>
 
           <div className="space-y-2">

@@ -57,9 +57,20 @@ export const adAttempts = pgTable("ad_attempts", {
   session_id: text("session_id").notNull(),
   content_id: uuid("content_id").references(() => contents.id, { onDelete: "cascade" }).notNull(),
   user_session_id: uuid("user_session_id").references(() => userSessions.id, { onDelete: "cascade" }).notNull(),
+  smartlink_id: uuid("smartlink_id"),
   started_at: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
   used: boolean("used").notNull().default(false),
   completed_at: timestamp("completed_at", { withTimezone: true }),
+});
+
+export const smartlinks = pgTable("smartlinks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  url: text("url").notNull(),
+  name: text("name"),
+  weight: integer("weight").notNull().default(1),
+  is_active: boolean("is_active").notNull().default(true),
+  created_at: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updated_at: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const insertContentSchema = z.object({
@@ -68,7 +79,7 @@ export const insertContentSchema = z.object({
   thumbnail_url: z.string().nullish(),
   file_url: z.string().nullish(),
   redirect_url: z.string().nullish(),
-  required_ads: z.number().int().min(0).default(3),
+  required_ads: z.number().int().min(1).default(3),
   status: z.string().default("active"),
 });
 
@@ -95,6 +106,13 @@ export const insertUserRoleSchema = z.object({
   role: z.enum(["admin", "editor"]).default("editor"),
 });
 
+export const insertSmartlinkSchema = z.object({
+  url: z.string().url("Valid URL is required"),
+  name: z.string().nullish(),
+  weight: z.number().int().min(1).default(1),
+  is_active: z.boolean().default(true),
+});
+
 export type Content = typeof contents.$inferSelect;
 export type InsertContent = z.infer<typeof insertContentSchema>;
 
@@ -111,3 +129,6 @@ export type UserRole = typeof userRoles.$inferSelect;
 export type InsertUserRole = z.infer<typeof insertUserRoleSchema>;
 
 export type AdAttempt = typeof adAttempts.$inferSelect;
+
+export type Smartlink = typeof smartlinks.$inferSelect;
+export type InsertSmartlink = z.infer<typeof insertSmartlinkSchema>;
