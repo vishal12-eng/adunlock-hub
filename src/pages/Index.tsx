@@ -3,6 +3,7 @@ import { Header } from '@/components/Header';
 import { ContentCard } from '@/components/ContentCard';
 import { UnlockModal } from '@/components/UnlockModal';
 import { AdBanner } from '@/components/AdBanner';
+import { AdvertisementBanner } from '@/components/AdvertisementBanner';
 import { api, Content } from '@/lib/api';
 import { Zap, TrendingUp, Shield } from 'lucide-react';
 
@@ -99,6 +100,12 @@ export default function Index() {
       <section className="px-4 pb-8">
         <div className="container mx-auto">
           <AdBanner className="max-w-4xl mx-auto h-28" />
+        </div>
+      </section>
+
+      <section className="px-4 pb-6">
+        <div className="container mx-auto">
+          <AdvertisementBanner className="max-w-4xl mx-auto h-32 md:h-40" />
         </div>
       </section>
 
