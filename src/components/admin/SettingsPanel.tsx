@@ -3,6 +3,7 @@ import { Settings, Save, Loader2, ExternalLink, AlertTriangle } from 'lucide-rea
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { SmartlinksPanel } from './SmartlinksPanel';
+import { PopunderSettings } from './PopunderSettings';
 
 export function SettingsPanel() {
   const [loading, setLoading] = useState(true);
@@ -55,6 +56,8 @@ export function SettingsPanel() {
       </div>
 
       <SmartlinksPanel />
+
+      <PopunderSettings />
 
       <div className="glass rounded-2xl p-6 space-y-6">
         <div className="flex items-center gap-3">

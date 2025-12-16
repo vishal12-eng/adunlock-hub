@@ -1,4 +1,5 @@
 import { Lock, Eye, Download } from 'lucide-react';
+import { usePopunder } from '@/hooks/usePopunder';
 
 interface ContentCardProps {
   id: string;
@@ -20,9 +21,16 @@ export function ContentCard({
   unlocks,
   onClick
 }: ContentCardProps) {
+  const { triggerPopunder } = usePopunder();
+
+  function handleClick() {
+    triggerPopunder();
+    onClick();
+  }
+
   return (
     <div 
-      onClick={onClick}
+      onClick={handleClick}
       className="content-card rounded-2xl overflow-hidden"
     >
       {/* Thumbnail */}

@@ -2,6 +2,7 @@ import { X, Lock, PlayCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
+import { usePopunder } from '@/hooks/usePopunder';
 
 interface UnlockModalProps {
   isOpen: boolean;
@@ -17,10 +18,13 @@ interface UnlockModalProps {
 
 export function UnlockModal({ isOpen, onClose, content }: UnlockModalProps) {
   const navigate = useNavigate();
+  const { triggerPopunder } = usePopunder();
 
   if (!isOpen) return null;
 
   async function handleStartTask() {
+    triggerPopunder();
+    
     const sessionId = getSessionId();
 
     try {

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { PopunderProvider } from "@/hooks/usePopunder";
 import Index from "./pages/Index";
 import UnlockPage from "./pages/UnlockPage";
 import AdminAuth from "./pages/AdminAuth";
@@ -16,17 +17,19 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/unlock/:contentId" element={<UnlockPage />} />
-            <Route path="/panel-adnexus-9f3x/login" element={<AdminAuth />} />
-            <Route path="/panel-adnexus-9f3x" element={<AdminDashboard />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <PopunderProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/unlock/:contentId" element={<UnlockPage />} />
+              <Route path="/panel-adnexus-9f3x/login" element={<AdminAuth />} />
+              <Route path="/panel-adnexus-9f3x" element={<AdminDashboard />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </PopunderProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

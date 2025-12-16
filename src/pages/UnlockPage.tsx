@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { api, Content, UserSession, ApiError } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
+import { usePopunder } from '@/hooks/usePopunder';
 import { 
   CheckCircle, 
   Lock, 
@@ -20,6 +21,7 @@ const MIN_AD_TIME_SECONDS = 12;
 export default function UnlockPage() {
   const { contentId } = useParams<{ contentId: string }>();
   const navigate = useNavigate();
+  const { triggerPopunder } = usePopunder();
   
   const [content, setContent] = useState<Content | null>(null);
   const [session, setSession] = useState<UserSession | null>(null);
@@ -101,6 +103,8 @@ export default function UnlockPage() {
         return;
       }
 
+      triggerPopunder();
+
       setAdToken(response.token);
       setCountdown(response.min_time_seconds);
 
@@ -172,6 +176,8 @@ export default function UnlockPage() {
 
   function handleDownload() {
     if (!content) return;
+
+    triggerPopunder();
 
     if (content.redirect_url) {
       window.open(content.redirect_url, '_blank');
