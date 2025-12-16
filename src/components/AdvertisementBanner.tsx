@@ -40,8 +40,12 @@ export function AdvertisementBanner({ className = '' }: AdvertisementBannerProps
   }, []);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Trigger popunder first (needs to be in user gesture context)
     triggerPopunder();
     
+    // Only prevent default if no redirect URL is set
     if (!settings.redirectUrl) {
       e.preventDefault();
     }

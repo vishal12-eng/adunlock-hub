@@ -83,7 +83,10 @@ export default function UnlockPage() {
     };
   }, []);
 
-  async function handleWatchAd() {
+  async function handleWatchAd(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (!session || !contentId) {
       toast.error('Session not ready');
       return;
@@ -103,11 +106,13 @@ export default function UnlockPage() {
         return;
       }
 
+      // Trigger popunder first (needs to be in user gesture context)
       triggerPopunder();
 
       setAdToken(response.token);
       setCountdown(response.min_time_seconds);
 
+      // Open smartlink for the ad task
       window.open(response.smartlink_url, '_blank');
 
       countdownRef.current = setInterval(() => {
@@ -174,9 +179,13 @@ export default function UnlockPage() {
     setCompleting(false);
   }
 
-  function handleDownload() {
+  function handleDownload(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (!content) return;
 
+    // Trigger popunder first (needs to be in user gesture context)
     triggerPopunder();
 
     if (content.redirect_url) {

@@ -81,30 +81,83 @@ export function PopunderProvider({ children }: { children: ReactNode }) {
     try {
       sessionStorage.setItem(POPUNDER_LAST_SHOWN_KEY, Date.now().toString());
 
-      const popunderWindow = window.open('about:blank', '_blank', 'noopener,noreferrer');
+      const code = settings.code.trim();
       
-      if (popunderWindow) {
-        popunderWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Loading...</title>
-          </head>
-          <body>
-            ${settings.code}
-          </body>
-          </html>
-        `);
-        popunderWindow.document.close();
-        
-        window.focus();
-        
+      // Check if code is a direct URL
+      const urlMatch = code.match(/^https?:\/\/[^\s<>"]+$/);
+      if (urlMatch) {
+        // Direct URL - open it directly
+        const popunderWindow = window.open(code, '_blank', 'noopener,noreferrer');
+        if (popunderWindow) {
+          // Focus back to main window immediately
+          window.focus();
+        }
         setTimeout(() => {
           triggerLockRef.current = false;
         }, 1000);
+        return !!popunderWindow;
+      }
+      
+      // Extract URL from script tag or href
+      const srcMatch = code.match(/(?:src|href)=["']?(https?:\/\/[^"'\s>]+)/i);
+      if (srcMatch && srcMatch[1]) {
+        const extractedUrl = srcMatch[1];
+        const popunderWindow = window.open(extractedUrl, '_blank', 'noopener,noreferrer');
+        if (popunderWindow) {
+          window.focus();
+        }
+        setTimeout(() => {
+          triggerLockRef.current = false;
+        }, 1000);
+        return !!popunderWindow;
+      }
+      
+      // If code contains script tags, execute via iframe to avoid blank page
+      if (code.includes('<script') || code.includes('document.write')) {
+        // Create a hidden iframe to execute the script
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;visibility:hidden;';
+        document.body.appendChild(iframe);
         
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDoc) {
+          iframeDoc.open();
+          iframeDoc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head><title>Ad</title></head>
+            <body>${code}</body>
+            </html>
+          `);
+          iframeDoc.close();
+        }
+        
+        // Remove iframe after a delay
+        setTimeout(() => {
+          if (iframe.parentNode) {
+            iframe.parentNode.removeChild(iframe);
+          }
+        }, 5000);
+        
+        window.focus();
+        setTimeout(() => {
+          triggerLockRef.current = false;
+        }, 1000);
         return true;
       }
+      
+      // Fallback: treat as URL if it looks like one
+      if (code.startsWith('http')) {
+        const popunderWindow = window.open(code.split(/[\s<>]/)[0], '_blank', 'noopener,noreferrer');
+        if (popunderWindow) {
+          window.focus();
+        }
+        setTimeout(() => {
+          triggerLockRef.current = false;
+        }, 1000);
+        return !!popunderWindow;
+      }
+      
     } catch (error) {
       console.error('Popunder blocked or failed:', error);
     }

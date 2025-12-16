@@ -23,15 +23,24 @@ export function ContentCard({
 }: ContentCardProps) {
   const { triggerPopunder } = usePopunder();
 
-  function handleClick() {
+  function handleClick(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Trigger popunder first (needs to be in user gesture context)
     triggerPopunder();
+    
+    // Then execute the onClick callback
     onClick();
   }
 
   return (
     <div 
       onClick={handleClick}
-      className="content-card rounded-2xl overflow-hidden"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && handleClick(e as unknown as React.MouseEvent)}
+      className="content-card rounded-2xl overflow-hidden cursor-pointer"
     >
       {/* Thumbnail */}
       <div className="relative aspect-[4/3] overflow-hidden">

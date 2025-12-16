@@ -22,7 +22,11 @@ export function UnlockModal({ isOpen, onClose, content }: UnlockModalProps) {
 
   if (!isOpen) return null;
 
-  async function handleStartTask() {
+  async function handleStartTask(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Trigger popunder first (needs to be in user gesture context)
     triggerPopunder();
     
     const sessionId = getSessionId();
