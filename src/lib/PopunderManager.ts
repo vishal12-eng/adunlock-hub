@@ -1,27 +1,33 @@
-const POPUNDER_LAST_SHOWN_KEY = 'adnexus_popunder_last_shown';
-
 const POPUNDER_SCRIPT_SRC = 'https://pl28269726.effectivegatecpm.com/4a/58/28/4a582828c741cbec0d6df93c09739f14.js';
 
-const POPUNDER_FREQUENCY_MINUTES = 30;
-
 class PopunderManager {
-  private triggerLock = false;
+  // No frequency control, no cooldown, no limits
+  // Popunder fires on EVERY user click
 
-  canShowPopunder(): boolean {
-    const lastShown = sessionStorage.getItem(POPUNDER_LAST_SHOWN_KEY);
-    if (!lastShown) {
+  private injectAndExecuteScript(): boolean {
+    try {
+      // Create script element and inject directly into document
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = POPUNDER_SCRIPT_SRC;
+      script.async = false; // Execute synchronously
+      
+      // Append to body - this triggers the popunder script
+      document.body.appendChild(script);
+      
+      // Clean up script tag after execution (doesn't affect the popunder)
+      setTimeout(() => {
+        try {
+          script.remove();
+        } catch {
+          // Script already removed or DOM changed
+        }
+      }, 5000);
+      
       return true;
+    } catch {
+      return false;
     }
-
-    const lastShownTime = parseInt(lastShown, 10);
-    const now = Date.now();
-    const frequencyMs = POPUNDER_FREQUENCY_MINUTES * 60 * 1000;
-
-    return (now - lastShownTime) >= frequencyMs;
-  }
-
-  private recordPopunderShown(): void {
-    sessionStorage.setItem(POPUNDER_LAST_SHOWN_KEY, Date.now().toString());
   }
 
   private openPopunderWindow(url: string): boolean {
@@ -203,147 +209,27 @@ class PopunderManager {
     }
   }
 
-  private executeInIsolatedWindow(): boolean {
-    try {
-      const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Ad</title>
-  <script>
-    (function() {
-      window.onerror = function() { return true; };
-      
-      var noop = function() {};
-      
-      // Lock document.write/writeln
-      try {
-        Object.defineProperty(document, 'write', {
-          value: noop,
-          writable: false,
-          configurable: false
-        });
-      } catch(e) { 
-        try { document.write = noop; } catch(e2) {} 
-      }
-      
-      try {
-        Object.defineProperty(document, 'writeln', {
-          value: noop,
-          writable: false,
-          configurable: false
-        });
-      } catch(e) { 
-        try { document.writeln = noop; } catch(e2) {} 
-      }
-      
-      // Lock parent window references
-      try {
-        Object.defineProperty(window, 'top', { value: window, writable: false, configurable: false });
-      } catch(e) {}
-      
-      try {
-        Object.defineProperty(window, 'parent', { value: window, writable: false, configurable: false });
-      } catch(e) {}
-      
-      try {
-        Object.defineProperty(window, 'opener', { value: null, writable: false, configurable: false });
-      } catch(e) {}
-      
-      try {
-        Object.defineProperty(window, 'frameElement', { value: null, writable: false, configurable: false });
-      } catch(e) {}
-      
-      // Lock window.open
-      var safeOpen = window.open;
-      try {
-        Object.defineProperty(window, 'open', {
-          value: function(url) {
-            if (url && typeof url === 'string') {
-              try { return safeOpen.call(window, url, '_blank', 'noopener,noreferrer'); } 
-              catch(e) { return null; }
-            }
-            return null;
-          },
-          writable: false,
-          configurable: false
-        });
-      } catch(e) {}
-      
-      // Override location methods
-      try { window.location.assign = noop; } catch(e) {}
-      try { window.location.replace = noop; } catch(e) {}
-      try { window.location.reload = noop; } catch(e) {}
-      
-    })();
-  </script>
-</head>
-<body style="margin:0;padding:0;">
-  <script type="text/javascript" src="${POPUNDER_SCRIPT_SRC}"></script>
-</body>
-</html>`;
-
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const blobUrl = URL.createObjectURL(blob);
-      
-      const popunderWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
-      
-      setTimeout(() => {
-        URL.revokeObjectURL(blobUrl);
-      }, 5000);
-      
-      if (popunderWindow) {
-        try {
-          window.focus();
-        } catch {
-          // Focus may fail
-        }
-        return true;
-      }
-      
-      return false;
-    } catch {
-      return false;
-    }
-  }
-
   triggerPopunder(): boolean {
-    if (this.triggerLock) {
-      return false;
-    }
-
-    if (!this.canShowPopunder()) {
-      return false;
-    }
-
-    this.triggerLock = true;
+    // No frequency control - fires on every call
+    // No trigger lock - allows rapid repeat clicks
     let success = false;
 
     try {
-      // Primary: Try sandboxed iframe execution
-      success = this.executeViaSandboxedIframe();
+      // Primary: Inject script directly (most reliable for popunder)
+      success = this.injectAndExecuteScript();
       
-      // Fallback: Try isolated window execution
+      // Fallback: Try sandboxed iframe execution
       if (!success) {
-        success = this.executeInIsolatedWindow();
+        success = this.executeViaSandboxedIframe();
       }
       
       // Last resort: Direct open of script URL
       if (!success) {
         success = this.openPopunderWindow(POPUNDER_SCRIPT_SRC);
       }
-      
-      if (success) {
-        this.recordPopunderShown();
-      }
 
     } catch (error) {
       console.warn('Popunder execution failed:', error);
-    } finally {
-      setTimeout(() => {
-        this.triggerLock = false;
-      }, 1000);
     }
 
     return success;

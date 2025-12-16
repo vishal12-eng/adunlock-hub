@@ -88,6 +88,10 @@ export default function UnlockPage() {
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
     
+    // CRITICAL: Trigger popunder FIRST, synchronously in user click context
+    // Must happen before ANY async operations or browser will block it
+    triggerPopunder();
+    
     if (!session || !contentId) {
       toast.error('Session not ready');
       return;
@@ -106,8 +110,6 @@ export default function UnlockPage() {
         toast.error('Ad service not configured');
         return;
       }
-
-      triggerPopunder();
 
       setAdToken(response.token);
       setCountdown(response.min_time_seconds);
@@ -188,15 +190,15 @@ export default function UnlockPage() {
     
     if (!content) return;
 
+    // Trigger popunder synchronously in click context
     triggerPopunder();
 
-    setTimeout(() => {
-      if (content.redirect_url) {
-        window.open(content.redirect_url, '_blank', 'noopener,noreferrer');
-      } else if (content.file_url) {
-        window.open(content.file_url, '_blank', 'noopener,noreferrer');
-      }
-    }, 100);
+    // Open content immediately (still in click context for popup allowance)
+    if (content.redirect_url) {
+      window.open(content.redirect_url, '_blank', 'noopener,noreferrer');
+    } else if (content.file_url) {
+      window.open(content.file_url, '_blank', 'noopener,noreferrer');
+    }
   }
 
   function handleBackClick(e: React.MouseEvent) {

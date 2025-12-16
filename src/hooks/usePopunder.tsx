@@ -2,7 +2,6 @@ import { createContext, useContext, useCallback, ReactNode } from 'react';
 import { popunderManager } from '@/lib/PopunderManager';
 
 interface PopunderContextValue {
-  canShowPopunder: () => boolean;
   triggerPopunder: () => boolean;
   triggerPopunderSafe: (event: React.MouseEvent | MouseEvent) => boolean;
 }
@@ -10,10 +9,6 @@ interface PopunderContextValue {
 const PopunderContext = createContext<PopunderContextValue | null>(null);
 
 export function PopunderProvider({ children }: { children: ReactNode }) {
-  const canShowPopunder = useCallback((): boolean => {
-    return popunderManager.canShowPopunder();
-  }, []);
-
   const triggerPopunder = useCallback((): boolean => {
     return popunderManager.triggerPopunder();
   }, []);
@@ -23,7 +18,6 @@ export function PopunderProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value: PopunderContextValue = {
-    canShowPopunder,
     triggerPopunder,
     triggerPopunderSafe
   };
@@ -40,7 +34,6 @@ export function usePopunder(): PopunderContextValue {
   
   if (!context) {
     return {
-      canShowPopunder: () => false,
       triggerPopunder: () => false,
       triggerPopunderSafe: () => false
     };
