@@ -26,12 +26,26 @@ export function ContentCard({
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
     
-    // Trigger popunder first (needs to be in user gesture context)
     triggerPopunder();
     
-    // Then execute the onClick callback
-    onClick();
+    requestAnimationFrame(() => {
+      onClick();
+    });
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      triggerPopunder();
+      
+      requestAnimationFrame(() => {
+        onClick();
+      });
+    }
   }
 
   return (
@@ -39,10 +53,9 @@ export function ContentCard({
       onClick={handleClick}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && handleClick(e as unknown as React.MouseEvent)}
+      onKeyDown={handleKeyDown}
       className="content-card rounded-2xl overflow-hidden cursor-pointer"
     >
-      {/* Thumbnail */}
       <div className="relative aspect-[4/3] overflow-hidden">
         {thumbnailUrl ? (
           <img 
@@ -56,16 +69,13 @@ export function ContentCard({
           </div>
         )}
         
-        {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-80" />
         
-        {/* Lock badge */}
         <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 glass rounded-full">
           <Lock className="w-3.5 h-3.5 text-primary" />
           <span className="text-xs font-semibold text-primary">{requiredAds} Ads</span>
         </div>
         
-        {/* Stats */}
         <div className="absolute bottom-3 left-3 flex items-center gap-3">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Eye className="w-3.5 h-3.5" />
@@ -78,7 +88,6 @@ export function ContentCard({
         </div>
       </div>
       
-      {/* Content info */}
       <div className="p-4 space-y-2">
         <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
           {title}
@@ -89,7 +98,6 @@ export function ContentCard({
           </p>
         )}
         
-        {/* CTA */}
         <div className="pt-2">
           <span className="text-xs font-medium text-primary flex items-center gap-1">
             <Lock className="w-3 h-3" />

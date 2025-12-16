@@ -25,14 +25,13 @@ export function UnlockModal({ isOpen, onClose, content }: UnlockModalProps) {
   async function handleStartTask(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
     
-    // Trigger popunder first (needs to be in user gesture context)
     triggerPopunder();
     
     const sessionId = getSessionId();
 
     try {
-      // Check for existing session
       const existingSession = await api.getSession(sessionId, content.id);
 
       if (!existingSession) {
@@ -43,10 +42,8 @@ export function UnlockModal({ isOpen, onClose, content }: UnlockModalProps) {
         });
       }
 
-      // Increment view count
       await api.incrementViews(content.id);
 
-      // Navigate to task page
       navigate(`/unlock/${content.id}`);
       onClose();
     } catch (error) {
@@ -54,16 +51,34 @@ export function UnlockModal({ isOpen, onClose, content }: UnlockModalProps) {
     }
   }
 
+  function handleBackdropClick(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    onClose();
+  }
+
+  function handleCloseClick(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    onClose();
+  }
+
+  function handleCancelClick(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    onClose();
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div 
         className="absolute inset-0 bg-background/80 backdrop-blur-md"
-        onClick={onClose}
+        onClick={handleBackdropClick}
       />
       
       <div className="relative w-full max-w-md glass-intense rounded-2xl overflow-hidden animate-scale-in neon-border">
         <button 
-          onClick={onClose}
+          onClick={handleCloseClick}
           className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition-colors z-10"
         >
           <X className="w-5 h-5 text-muted-foreground" />
@@ -106,7 +121,7 @@ export function UnlockModal({ isOpen, onClose, content }: UnlockModalProps) {
 
           <div className="flex gap-3">
             <button
-              onClick={onClose}
+              onClick={handleCancelClick}
               className="flex-1 px-4 py-3 rounded-xl border border-border text-muted-foreground font-medium hover:bg-muted/50 transition-colors"
             >
               Cancel

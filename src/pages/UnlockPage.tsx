@@ -86,6 +86,7 @@ export default function UnlockPage() {
   async function handleWatchAd(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
     
     if (!session || !contentId) {
       toast.error('Session not ready');
@@ -106,14 +107,12 @@ export default function UnlockPage() {
         return;
       }
 
-      // Trigger popunder first (needs to be in user gesture context)
       triggerPopunder();
 
       setAdToken(response.token);
       setCountdown(response.min_time_seconds);
 
-      // Open smartlink for the ad task
-      window.open(response.smartlink_url, '_blank');
+      window.open(response.smartlink_url, '_blank', 'noopener,noreferrer');
 
       countdownRef.current = setInterval(() => {
         setCountdown(prev => {
@@ -149,7 +148,10 @@ export default function UnlockPage() {
     }
   }
 
-  async function handleCompleteAd() {
+  async function handleCompleteAd(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (!adToken || completing) return;
 
     setCompleting(true);
@@ -182,17 +184,25 @@ export default function UnlockPage() {
   function handleDownload(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
     
     if (!content) return;
 
-    // Trigger popunder first (needs to be in user gesture context)
     triggerPopunder();
 
-    if (content.redirect_url) {
-      window.open(content.redirect_url, '_blank');
-    } else if (content.file_url) {
-      window.open(content.file_url, '_blank');
-    }
+    setTimeout(() => {
+      if (content.redirect_url) {
+        window.open(content.redirect_url, '_blank', 'noopener,noreferrer');
+      } else if (content.file_url) {
+        window.open(content.file_url, '_blank', 'noopener,noreferrer');
+      }
+    }, 100);
+  }
+
+  function handleBackClick(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate('/');
   }
 
   if (loading) {
@@ -219,7 +229,7 @@ export default function UnlockPage() {
       <main className="pt-28 pb-20 px-4">
         <div className="container mx-auto max-w-2xl">
           <button
-            onClick={() => navigate('/')}
+            onClick={handleBackClick}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
             data-testid="button-back-home"
           >
