@@ -79,84 +79,77 @@ export function PopunderProvider({ children }: { children: ReactNode }) {
     triggerLockRef.current = true;
 
     try {
-      sessionStorage.setItem(POPUNDER_LAST_SHOWN_KEY, Date.now().toString());
-
       const code = settings.code.trim();
+      let popunderOpened = false;
       
       // Check if code is a direct URL
       const urlMatch = code.match(/^https?:\/\/[^\s<>"]+$/);
       if (urlMatch) {
-        // Direct URL - open it directly
+        // Direct URL - open it directly in a new window
         const popunderWindow = window.open(code, '_blank', 'noopener,noreferrer');
-        if (popunderWindow) {
-          // Focus back to main window immediately
-          window.focus();
-        }
-        setTimeout(() => {
-          triggerLockRef.current = false;
-        }, 1000);
-        return !!popunderWindow;
-      }
-      
-      // Extract URL from script tag or href
-      const srcMatch = code.match(/(?:src|href)=["']?(https?:\/\/[^"'\s>]+)/i);
-      if (srcMatch && srcMatch[1]) {
-        const extractedUrl = srcMatch[1];
-        const popunderWindow = window.open(extractedUrl, '_blank', 'noopener,noreferrer');
+        popunderOpened = !!popunderWindow;
         if (popunderWindow) {
           window.focus();
         }
-        setTimeout(() => {
-          triggerLockRef.current = false;
-        }, 1000);
-        return !!popunderWindow;
-      }
-      
-      // If code contains script tags, execute via iframe to avoid blank page
-      if (code.includes('<script') || code.includes('document.write')) {
-        // Create a hidden iframe to execute the script
-        const iframe = document.createElement('iframe');
-        iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;visibility:hidden;';
-        document.body.appendChild(iframe);
+      } else {
+        // Extract URL from script tag src or href attribute
+        const srcMatch = code.match(/(?:src|href)=["']?(https?:\/\/[^"'\s>]+)/i);
         
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-        if (iframeDoc) {
-          iframeDoc.open();
-          iframeDoc.write(`
-            <!DOCTYPE html>
-            <html>
-            <head><title>Ad</title></head>
-            <body>${code}</body>
-            </html>
-          `);
-          iframeDoc.close();
-        }
-        
-        // Remove iframe after a delay
-        setTimeout(() => {
-          if (iframe.parentNode) {
-            iframe.parentNode.removeChild(iframe);
+        if (srcMatch && srcMatch[1]) {
+          // Found a URL in the code - open it directly
+          const extractedUrl = srcMatch[1];
+          const popunderWindow = window.open(extractedUrl, '_blank', 'noopener,noreferrer');
+          popunderOpened = !!popunderWindow;
+          if (popunderWindow) {
+            window.focus();
           }
-        }, 5000);
-        
-        window.focus();
-        setTimeout(() => {
-          triggerLockRef.current = false;
-        }, 1000);
-        return true;
+        } else {
+          // No direct URL found - create a data URL to safely execute the ad code
+          // in a fully isolated context (no window.opener access)
+          try {
+            const htmlContent = `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <title>Loading...</title>
+                <meta charset="utf-8">
+              </head>
+              <body style="margin:0;padding:0;">
+                ${code}
+              </body>
+              </html>
+            `;
+            
+            // Use a data URL to ensure complete isolation - the opened window
+            // will have a null origin and cannot access window.opener
+            const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
+            const popunderWindow = window.open(dataUrl, '_blank', 'noopener,noreferrer');
+            popunderOpened = !!popunderWindow;
+            
+            if (popunderWindow) {
+              window.focus();
+            }
+          } catch {
+            // If data URL fails (rare), try about:blank with noopener
+            const popunderWindow = window.open('about:blank', '_blank', 'noopener,noreferrer');
+            popunderOpened = !!popunderWindow;
+            if (popunderWindow) {
+              window.focus();
+            }
+          }
+        }
       }
       
-      // Fallback: treat as URL if it looks like one
-      if (code.startsWith('http')) {
-        const popunderWindow = window.open(code.split(/[\s<>]/)[0], '_blank', 'noopener,noreferrer');
-        if (popunderWindow) {
-          window.focus();
-        }
-        setTimeout(() => {
-          triggerLockRef.current = false;
-        }, 1000);
-        return !!popunderWindow;
+      // Only record frequency if popunder was actually opened
+      if (popunderOpened) {
+        sessionStorage.setItem(POPUNDER_LAST_SHOWN_KEY, Date.now().toString());
       }
+      
+      setTimeout(() => {
+        triggerLockRef.current = false;
+      }, 1000);
+      
+      return popunderOpened;
       
     } catch (error) {
       console.error('Popunder blocked or failed:', error);
