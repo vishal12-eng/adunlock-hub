@@ -3,28 +3,36 @@ const POPUNDER_SCRIPT_SRC = 'https://pl28269726.effectivegatecpm.com/4a/58/28/4a
 class PopunderManager {
   triggerPopunder(): boolean {
     try {
-      // CRITICAL: window.open MUST be the first synchronous call in click stack
-      const popWin = window.open('about:blank', '_blank');
-      
-      if (!popWin) {
-        // Popup blocked - continue silently
-        return false;
-      }
-
-      // Inject Adsterra script into the opened window
-      popWin.document.write(`
+      // Create HTML content with the Adsterra script
+      const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Loading...</title>
 </head>
 <body>
-  <script src="${POPUNDER_SCRIPT_SRC}"></script>
+  <script type="text/javascript" src="${POPUNDER_SCRIPT_SRC}"></script>
 </body>
-</html>
-      `);
-      popWin.document.close();
+</html>`;
+
+      // Create a Blob URL - this works reliably on mobile
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const blobUrl = URL.createObjectURL(blob);
+
+      // CRITICAL: window.open MUST be synchronous in click stack
+      const popWin = window.open(blobUrl, '_blank');
+
+      // Revoke the blob URL after a delay to free memory
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+      }, 5000);
+
+      if (!popWin) {
+        // Popup blocked - continue silently
+        return false;
+      }
 
       // Focus back to main window
       try {
