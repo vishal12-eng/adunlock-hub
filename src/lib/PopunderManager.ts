@@ -3,36 +3,27 @@ const POPUNDER_SCRIPT_SRC = 'https://pl28269726.effectivegatecpm.com/4a/58/28/4a
 class PopunderManager {
   triggerPopunder(): boolean {
     try {
-      // Create HTML content with the Adsterra script
-      const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Loading...</title>
-</head>
-<body>
-  <script type="text/javascript" src="${POPUNDER_SCRIPT_SRC}"></script>
-</body>
-</html>`;
-
-      // Create a Blob URL - this works reliably on mobile
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const blobUrl = URL.createObjectURL(blob);
-
       // CRITICAL: window.open MUST be synchronous in click stack
-      const popWin = window.open(blobUrl, '_blank');
-
-      // Revoke the blob URL after a delay to free memory
-      setTimeout(() => {
-        URL.revokeObjectURL(blobUrl);
-      }, 5000);
-
-      if (!popWin) {
+      const pop = window.open('about:blank', '_blank');
+      
+      if (!pop) {
         // Popup blocked - continue silently
         return false;
       }
+
+      // Open, write, close - proper document writing sequence
+      pop.document.open();
+      pop.document.write(`
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="${POPUNDER_SCRIPT_SRC}"></script>
+  </head>
+  <body></body>
+</html>
+      `);
+      pop.document.close();
 
       // Focus back to main window
       try {
