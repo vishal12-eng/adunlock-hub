@@ -3,7 +3,6 @@ import { Settings, Save, Loader2, ExternalLink, AlertTriangle } from 'lucide-rea
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { SmartlinksPanel } from './SmartlinksPanel';
-import { PopunderSettings } from './PopunderSettings';
 import { BannerSettings } from './BannerSettings';
 
 export function SettingsPanel() {
@@ -57,8 +56,6 @@ export function SettingsPanel() {
       </div>
 
       <SmartlinksPanel />
-
-      <PopunderSettings />
 
       <BannerSettings />
 

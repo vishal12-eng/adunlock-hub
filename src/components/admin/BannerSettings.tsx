@@ -121,7 +121,7 @@ export function BannerSettings() {
             className="w-full px-4 py-3 rounded-xl bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
           <p className="text-xs text-muted-foreground">
-            Leave empty to only trigger popunder on click. If set, user will be redirected to this URL.
+            Leave empty to only trigger a popunder ad on click. If set, user will also be redirected to this URL.
           </p>
         </div>
 
@@ -144,8 +144,8 @@ export function BannerSettings() {
         <div className="p-4 glass rounded-xl space-y-2">
           <h4 className="text-sm font-medium text-foreground">Click Behavior</h4>
           <ul className="text-xs text-muted-foreground space-y-1">
-            <li>• Clicking the banner will trigger a popunder ad (uses existing popunder settings)</li>
-            <li>• Popunder respects the frequency limits set in Popunder Ads settings</li>
+            <li>• Clicking the banner will trigger a popunder ad in the background</li>
+            <li>• Popunder respects a 30-minute frequency limit per session</li>
             <li>• If redirect URL is set, user will also be redirected to that page</li>
           </ul>
         </div>
