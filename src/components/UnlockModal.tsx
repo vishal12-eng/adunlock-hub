@@ -2,7 +2,6 @@ import { X, Lock, PlayCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
-import { usePopunder } from '@/hooks/usePopunder';
 
 interface UnlockModalProps {
   isOpen: boolean;
@@ -18,7 +17,6 @@ interface UnlockModalProps {
 
 export function UnlockModal({ isOpen, onClose, content }: UnlockModalProps) {
   const navigate = useNavigate();
-  const { triggerPopunder } = usePopunder();
 
   if (!isOpen) return null;
 
@@ -27,7 +25,8 @@ export function UnlockModal({ isOpen, onClose, content }: UnlockModalProps) {
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
     
-    triggerPopunder();
+    // Adsterra popunder triggers automatically on click via injected script
+    // No manual triggering needed
     
     const sessionId = getSessionId();
 
