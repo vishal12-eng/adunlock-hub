@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import { AdsterraPopunder } from "@/components/AdsterraPopunder";
 import Index from "./pages/Index";
 import UnlockPage from "./pages/UnlockPage";
 import AdminAuth from "./pages/AdminAuth";
@@ -20,7 +19,6 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <AdsterraPopunder />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/unlock/:contentId" element={<UnlockPage />} />

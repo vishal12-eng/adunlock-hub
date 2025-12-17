@@ -22,22 +22,13 @@ export function ContentCard({
 }: ContentCardProps) {
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
-    // Do NOT stopPropagation - let Adsterra capture the click for popunder
-    
-    // Delay navigation slightly so Adsterra popunder can trigger first
-    setTimeout(() => {
-      onClick();
-    }, 50);
+    onClick();
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      
-      // Delay navigation slightly so Adsterra popunder can trigger first
-      setTimeout(() => {
-        onClick();
-      }, 50);
+      onClick();
     }
   }
 
