@@ -81,9 +81,8 @@ export default function UnlockPage() {
     };
   }, []);
 
-  function handleWatchAd(e: React.MouseEvent) {
+  async function handleWatchAd(e: React.MouseEvent) {
     e.preventDefault();
-    // Do NOT stopPropagation - let Adsterra capture the click for popunder
     
     if (!session || !contentId) {
       toast.error('Session not ready');
@@ -92,58 +91,55 @@ export default function UnlockPage() {
 
     const sessionId = getSessionId();
 
-    // Delay async work to let Adsterra popunder trigger first
-    setTimeout(async () => {
-      try {
-        const response = await api.startAd({
-          session_id: sessionId,
-          content_id: contentId,
-          user_session_id: session.id
+    try {
+      const response = await api.startAd({
+        session_id: sessionId,
+        content_id: contentId,
+        user_session_id: session.id
+      });
+
+      if (!response.smartlink_url) {
+        toast.error('Ad service not configured');
+        return;
+      }
+
+      setAdToken(response.token);
+      setCountdown(response.min_time_seconds);
+
+      window.open(response.smartlink_url, '_blank', 'noopener,noreferrer');
+
+      countdownRef.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            if (countdownRef.current) clearInterval(countdownRef.current);
+            return 0;
+          }
+          return prev - 1;
         });
+      }, 1000);
 
-        if (!response.smartlink_url) {
-          toast.error('Ad service not configured');
-          return;
-        }
-
-        setAdToken(response.token);
-        setCountdown(response.min_time_seconds);
-
-        window.open(response.smartlink_url, '_blank', 'noopener,noreferrer');
-
-        countdownRef.current = setInterval(() => {
-          setCountdown(prev => {
+    } catch (error: unknown) {
+      if (error instanceof ApiError && error.code === 'cooldown') {
+        const waitTime = error.wait_seconds || 15;
+        setCooldownRemaining(waitTime);
+        cooldownRef.current = setInterval(() => {
+          setCooldownRemaining(prev => {
             if (prev <= 1) {
-              if (countdownRef.current) clearInterval(countdownRef.current);
+              if (cooldownRef.current) clearInterval(cooldownRef.current);
               return 0;
             }
             return prev - 1;
           });
         }, 1000);
-
-      } catch (error: unknown) {
-        if (error instanceof ApiError && error.code === 'cooldown') {
-          const waitTime = error.wait_seconds || 15;
-          setCooldownRemaining(waitTime);
-          cooldownRef.current = setInterval(() => {
-            setCooldownRemaining(prev => {
-              if (prev <= 1) {
-                if (cooldownRef.current) clearInterval(cooldownRef.current);
-                return 0;
-              }
-              return prev - 1;
-            });
-          }, 1000);
-          toast.error(error.message);
-        } else if (error instanceof ApiError && error.code === 'no_smartlink') {
-          toast.error('Ad service not configured. Please contact admin.');
-          setSmartlinkAvailable(false);
-        } else {
-          const err = error as Error;
-          toast.error(err.message || 'Failed to start ad');
-        }
+        toast.error(error.message);
+      } else if (error instanceof ApiError && error.code === 'no_smartlink') {
+        toast.error('Ad service not configured. Please contact admin.');
+        setSmartlinkAvailable(false);
+      } else {
+        const err = error as Error;
+        toast.error(err.message || 'Failed to start ad');
       }
-    }, 50);
+    }
   }
 
   async function handleCompleteAd(e: React.MouseEvent) {
@@ -181,26 +177,19 @@ export default function UnlockPage() {
 
   function handleDownload(e: React.MouseEvent) {
     e.preventDefault();
-    // Do NOT stopPropagation - let Adsterra capture the click for popunder
     
     if (!content) return;
 
-    // Delay the window.open to let Adsterra popunder trigger first
-    setTimeout(() => {
-      if (content.redirect_url) {
-        window.open(content.redirect_url, '_blank', 'noopener,noreferrer');
-      } else if (content.file_url) {
-        window.open(content.file_url, '_blank', 'noopener,noreferrer');
-      }
-    }, 50);
+    if (content.redirect_url) {
+      window.open(content.redirect_url, '_blank', 'noopener,noreferrer');
+    } else if (content.file_url) {
+      window.open(content.file_url, '_blank', 'noopener,noreferrer');
+    }
   }
 
   function handleBackClick(e: React.MouseEvent) {
     e.preventDefault();
-    // Delay navigation to let Adsterra popunder trigger first
-    setTimeout(() => {
-      navigate('/');
-    }, 50);
+    navigate('/');
   }
 
   if (loading) {
