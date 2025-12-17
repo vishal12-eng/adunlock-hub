@@ -1,6 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import { usePopunder } from '@/hooks/usePopunder';
 import { ImageIcon } from 'lucide-react';
 
 interface BannerSettings {
@@ -21,7 +20,6 @@ export function AdvertisementBanner({ className = '' }: AdvertisementBannerProps
   });
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const { triggerPopunder } = usePopunder();
 
   useEffect(() => {
     async function fetchSettings() {
@@ -39,17 +37,8 @@ export function AdvertisementBanner({ className = '' }: AdvertisementBannerProps
     fetchSettings();
   }, []);
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    // Trigger popunder first (needs to be in user gesture context)
-    triggerPopunder();
-    
-    // Only prevent default if no redirect URL is set
-    if (!settings.redirectUrl) {
-      e.preventDefault();
-    }
-  }, [settings.redirectUrl, triggerPopunder]);
+  // No manual popunder trigger - Adsterra handles it via static script in <head>
+  // Do NOT stopPropagation - let Adsterra capture the click
 
   if (!settings.enabled) {
     return null;
@@ -101,7 +90,6 @@ export function AdvertisementBanner({ className = '' }: AdvertisementBannerProps
         href={settings.redirectUrl}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={handleClick}
         className="block"
       >
         {bannerContent}
@@ -110,7 +98,7 @@ export function AdvertisementBanner({ className = '' }: AdvertisementBannerProps
   }
 
   return (
-    <div onClick={handleClick} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && handleClick(e as unknown as React.MouseEvent)}>
+    <div role="button" tabIndex={0}>
       {bannerContent}
     </div>
   );

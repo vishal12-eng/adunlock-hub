@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { api, Content, UserSession, ApiError } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
-import { usePopunder } from '@/hooks/usePopunder';
 import { 
   CheckCircle, 
   Lock, 
@@ -21,7 +20,6 @@ const MIN_AD_TIME_SECONDS = 12;
 export default function UnlockPage() {
   const { contentId } = useParams<{ contentId: string }>();
   const navigate = useNavigate();
-  const { triggerPopunder } = usePopunder();
   
   const [content, setContent] = useState<Content | null>(null);
   const [session, setSession] = useState<UserSession | null>(null);
@@ -83,14 +81,9 @@ export default function UnlockPage() {
     };
   }, []);
 
-  async function handleWatchAd(e: React.MouseEvent) {
+  function handleWatchAd(e: React.MouseEvent) {
     e.preventDefault();
-    e.stopPropagation();
-    e.nativeEvent.stopImmediatePropagation();
-    
-    // CRITICAL: Trigger popunder FIRST, synchronously in user click context
-    // Must happen before ANY async operations or browser will block it
-    triggerPopunder();
+    // Do NOT stopPropagation - let Adsterra capture the click for popunder
     
     if (!session || !contentId) {
       toast.error('Session not ready');
@@ -99,55 +92,58 @@ export default function UnlockPage() {
 
     const sessionId = getSessionId();
 
-    try {
-      const response = await api.startAd({
-        session_id: sessionId,
-        content_id: contentId,
-        user_session_id: session.id
-      });
-
-      if (!response.smartlink_url) {
-        toast.error('Ad service not configured');
-        return;
-      }
-
-      setAdToken(response.token);
-      setCountdown(response.min_time_seconds);
-
-      window.open(response.smartlink_url, '_blank', 'noopener,noreferrer');
-
-      countdownRef.current = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            if (countdownRef.current) clearInterval(countdownRef.current);
-            return 0;
-          }
-          return prev - 1;
+    // Delay async work to let Adsterra popunder trigger first
+    setTimeout(async () => {
+      try {
+        const response = await api.startAd({
+          session_id: sessionId,
+          content_id: contentId,
+          user_session_id: session.id
         });
-      }, 1000);
 
-    } catch (error: unknown) {
-      if (error instanceof ApiError && error.code === 'cooldown') {
-        const waitTime = error.wait_seconds || 15;
-        setCooldownRemaining(waitTime);
-        cooldownRef.current = setInterval(() => {
-          setCooldownRemaining(prev => {
+        if (!response.smartlink_url) {
+          toast.error('Ad service not configured');
+          return;
+        }
+
+        setAdToken(response.token);
+        setCountdown(response.min_time_seconds);
+
+        window.open(response.smartlink_url, '_blank', 'noopener,noreferrer');
+
+        countdownRef.current = setInterval(() => {
+          setCountdown(prev => {
             if (prev <= 1) {
-              if (cooldownRef.current) clearInterval(cooldownRef.current);
+              if (countdownRef.current) clearInterval(countdownRef.current);
               return 0;
             }
             return prev - 1;
           });
         }, 1000);
-        toast.error(error.message);
-      } else if (error instanceof ApiError && error.code === 'no_smartlink') {
-        toast.error('Ad service not configured. Please contact admin.');
-        setSmartlinkAvailable(false);
-      } else {
-        const err = error as Error;
-        toast.error(err.message || 'Failed to start ad');
+
+      } catch (error: unknown) {
+        if (error instanceof ApiError && error.code === 'cooldown') {
+          const waitTime = error.wait_seconds || 15;
+          setCooldownRemaining(waitTime);
+          cooldownRef.current = setInterval(() => {
+            setCooldownRemaining(prev => {
+              if (prev <= 1) {
+                if (cooldownRef.current) clearInterval(cooldownRef.current);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          toast.error(error.message);
+        } else if (error instanceof ApiError && error.code === 'no_smartlink') {
+          toast.error('Ad service not configured. Please contact admin.');
+          setSmartlinkAvailable(false);
+        } else {
+          const err = error as Error;
+          toast.error(err.message || 'Failed to start ad');
+        }
       }
-    }
+    }, 50);
   }
 
   async function handleCompleteAd(e: React.MouseEvent) {
@@ -185,26 +181,26 @@ export default function UnlockPage() {
 
   function handleDownload(e: React.MouseEvent) {
     e.preventDefault();
-    e.stopPropagation();
-    e.nativeEvent.stopImmediatePropagation();
+    // Do NOT stopPropagation - let Adsterra capture the click for popunder
     
     if (!content) return;
 
-    // Trigger popunder synchronously in click context
-    triggerPopunder();
-
-    // Open content immediately (still in click context for popup allowance)
-    if (content.redirect_url) {
-      window.open(content.redirect_url, '_blank', 'noopener,noreferrer');
-    } else if (content.file_url) {
-      window.open(content.file_url, '_blank', 'noopener,noreferrer');
-    }
+    // Delay the window.open to let Adsterra popunder trigger first
+    setTimeout(() => {
+      if (content.redirect_url) {
+        window.open(content.redirect_url, '_blank', 'noopener,noreferrer');
+      } else if (content.file_url) {
+        window.open(content.file_url, '_blank', 'noopener,noreferrer');
+      }
+    }, 50);
   }
 
   function handleBackClick(e: React.MouseEvent) {
     e.preventDefault();
-    e.stopPropagation();
-    navigate('/');
+    // Delay navigation to let Adsterra popunder trigger first
+    setTimeout(() => {
+      navigate('/');
+    }, 50);
   }
 
   if (loading) {

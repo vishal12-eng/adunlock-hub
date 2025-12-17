@@ -1,5 +1,4 @@
 import { Lock, Eye, Download } from 'lucide-react';
-import { usePopunder } from '@/hooks/usePopunder';
 
 interface ContentCardProps {
   id: string;
@@ -21,30 +20,24 @@ export function ContentCard({
   unlocks,
   onClick
 }: ContentCardProps) {
-  const { triggerPopunder } = usePopunder();
-
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
-    e.stopPropagation();
-    e.nativeEvent.stopImmediatePropagation();
+    // Do NOT stopPropagation - let Adsterra capture the click for popunder
     
-    triggerPopunder();
-    
-    requestAnimationFrame(() => {
+    // Delay navigation slightly so Adsterra popunder can trigger first
+    setTimeout(() => {
       onClick();
-    });
+    }, 50);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      e.stopPropagation();
       
-      triggerPopunder();
-      
-      requestAnimationFrame(() => {
+      // Delay navigation slightly so Adsterra popunder can trigger first
+      setTimeout(() => {
         onClick();
-      });
+      }, 50);
     }
   }
 
