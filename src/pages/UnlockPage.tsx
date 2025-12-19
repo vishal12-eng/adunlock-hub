@@ -1,6 +1,10 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
+import { RelatedContent } from '@/components/RelatedContent';
+import { SocialShare } from '@/components/SocialShare';
+import { InterstitialAd } from '@/components/InterstitialAd';
+import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { api, Content, UserSession, ApiError } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
 import { 
@@ -33,6 +37,8 @@ export default function UnlockPage() {
   
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
   const cooldownRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const { showAd, closeAd, incrementPageView } = useInterstitialAd();
 
   const fetchData = useCallback(async () => {
     if (!contentId) return;
@@ -72,7 +78,8 @@ export default function UnlockPage() {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+    incrementPageView();
+  }, [fetchData, incrementPageView]);
 
   useEffect(() => {
     return () => {
@@ -211,6 +218,7 @@ export default function UnlockPage() {
 
   return (
     <div className="min-h-screen">
+      <InterstitialAd isOpen={showAd} onClose={closeAd} />
       <Header />
       
       <main className="pt-28 pb-20 px-4">
@@ -257,11 +265,14 @@ export default function UnlockPage() {
             </div>
 
             <div className="p-6 space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold text-foreground mb-2" data-testid="text-content-title">{content.title}</h1>
-                {content.description && (
-                  <p className="text-muted-foreground">{content.description}</p>
-                )}
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <h1 className="text-2xl font-bold text-foreground mb-2" data-testid="text-content-title">{content.title}</h1>
+                  {content.description && (
+                    <p className="text-muted-foreground">{content.description}</p>
+                  )}
+                </div>
+                <SocialShare title={content.title} contentId={content.id} />
               </div>
 
               <div className="space-y-4">
@@ -385,6 +396,9 @@ export default function UnlockPage() {
               </div>
             </div>
           </div>
+
+          {/* Related Content */}
+          <RelatedContent currentContentId={content.id} />
         </div>
       </main>
     </div>

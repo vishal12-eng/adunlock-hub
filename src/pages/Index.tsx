@@ -4,14 +4,18 @@ import { ContentCard } from '@/components/ContentCard';
 import { UnlockModal } from '@/components/UnlockModal';
 import { AdBanner } from '@/components/AdBanner';
 import { AdvertisementBanner } from '@/components/AdvertisementBanner';
+import { FeaturedContent } from '@/components/FeaturedContent';
+import { ExitIntentPopup } from '@/components/ExitIntentPopup';
+import { InterstitialAd } from '@/components/InterstitialAd';
+import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { api, Content } from '@/lib/api';
 import { Zap, TrendingUp, Shield, Search, X } from 'lucide-react';
-
 export default function Index() {
   const [contents, setContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const { showAd, closeAd, incrementPageView } = useInterstitialAd();
 
   useEffect(() => {
     fetchContents();
@@ -37,6 +41,7 @@ export default function Index() {
   }, [contents, searchQuery]);
 
   function handleContentClick(content: Content) {
+    incrementPageView();
     setSelectedContent(content);
   }
 
@@ -72,6 +77,8 @@ export default function Index() {
 
   return (
     <div className="min-h-screen">
+      <ExitIntentPopup />
+      <InterstitialAd isOpen={showAd} onClose={closeAd} />
       <Header />
       
       <section className="pt-32 pb-16 px-4">
@@ -118,6 +125,11 @@ export default function Index() {
           <AdvertisementBanner className="max-w-4xl mx-auto h-32 md:h-40" />
         </div>
       </section>
+
+      {/* Featured Content Section */}
+      {contents.length > 0 && (
+        <FeaturedContent contents={contents} onContentClick={handleContentClick} />
+      )}
 
       <section className="px-4 pb-20">
         <div className="container mx-auto">

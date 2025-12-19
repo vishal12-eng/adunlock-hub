@@ -1,0 +1,99 @@
+import { Content } from '@/lib/api';
+import { TrendingUp, Eye, Unlock, ArrowRight, Lock } from 'lucide-react';
+
+interface FeaturedContentProps {
+  contents: Content[];
+  onContentClick: (content: Content) => void;
+}
+
+export function FeaturedContent({ contents, onContentClick }: FeaturedContentProps) {
+  // Get top 3 most viewed contents
+  const featured = [...contents]
+    .sort((a, b) => b.views - a.views)
+    .slice(0, 3);
+
+  if (featured.length === 0) return null;
+
+  return (
+    <section className="px-4 pb-12">
+      <div className="container mx-auto">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-accent/20 rounded-full">
+            <TrendingUp className="w-4 h-4 text-accent" />
+            <span className="text-sm font-semibold text-accent">Trending Now</span>
+          </div>
+          <div className="flex-1 h-px bg-gradient-to-r from-accent/50 to-transparent" />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {featured.map((content, index) => (
+            <button
+              key={content.id}
+              onClick={() => onContentClick(content)}
+              className={`relative overflow-hidden rounded-2xl text-left transition-all duration-500 group ${
+                index === 0 ? 'md:col-span-2 md:row-span-2' : ''
+              }`}
+            >
+              {/* Background image */}
+              <div className={`relative ${index === 0 ? 'aspect-video md:aspect-[16/10]' : 'aspect-video'}`}>
+                {content.thumbnail_url ? (
+                  <img
+                    src={content.thumbnail_url}
+                    alt={content.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-accent/30 to-primary/30 flex items-center justify-center">
+                    <Lock className="w-16 h-16 text-muted-foreground" />
+                  </div>
+                )}
+
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+
+                {/* Rank badge */}
+                <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 glass rounded-full">
+                  <span className="text-lg font-bold text-primary">#{index + 1}</span>
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                </div>
+
+                {/* Content info */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className={`font-bold text-foreground mb-2 group-hover:text-primary transition-colors ${
+                    index === 0 ? 'text-2xl md:text-3xl' : 'text-lg'
+                  }`}>
+                    {content.title}
+                  </h3>
+
+                  {content.description && index === 0 && (
+                    <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
+                      {content.description}
+                    </p>
+                  )}
+
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <Eye className="w-4 h-4" />
+                      <span className="text-sm">{content.views.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <Unlock className="w-4 h-4" />
+                      <span className="text-sm">{content.unlocks.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-primary ml-auto">
+                      <span className="text-sm font-medium">{content.required_ads} ads</span>
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hover border effect */}
+              <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 rounded-2xl transition-colors duration-300" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
