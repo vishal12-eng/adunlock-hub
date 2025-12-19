@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { ContentCard } from '@/components/ContentCard';
 import { UnlockModal } from '@/components/UnlockModal';
 import { AdBanner } from '@/components/AdBanner';
 import { AdvertisementBanner } from '@/components/AdvertisementBanner';
 import { api, Content } from '@/lib/api';
-import { Zap, TrendingUp, Shield } from 'lucide-react';
+import { Zap, TrendingUp, Shield, Search, X } from 'lucide-react';
 
 export default function Index() {
   const [contents, setContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchContents();
@@ -26,6 +27,15 @@ export default function Index() {
     setLoading(false);
   }
 
+  const filteredContents = useMemo(() => {
+    if (!searchQuery.trim()) return contents;
+    const query = searchQuery.toLowerCase().trim();
+    return contents.filter(content => 
+      content.title.toLowerCase().includes(query) ||
+      (content.description && content.description.toLowerCase().includes(query))
+    );
+  }, [contents, searchQuery]);
+
   function handleContentClick(content: Content) {
     setSelectedContent(content);
   }
@@ -33,7 +43,7 @@ export default function Index() {
   function renderContentWithAds() {
     const items: JSX.Element[] = [];
     
-    contents.forEach((content, index) => {
+    filteredContents.forEach((content, index) => {
       items.push(
         <ContentCard
           key={content.id}
@@ -48,7 +58,7 @@ export default function Index() {
         />
       );
 
-      if ((index + 1) % 4 === 0 && index < contents.length - 1) {
+      if ((index + 1) % 4 === 0 && index < filteredContents.length - 1) {
         items.push(
           <div key={`ad-${index}`} className="col-span-full">
             <AdBanner className="h-32" />
@@ -111,13 +121,34 @@ export default function Index() {
 
       <section className="px-4 pb-20">
         <div className="container mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-foreground">
-              Available Content
-            </h2>
-            <span className="text-sm text-muted-foreground">
-              {contents.length} items
-            </span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div className="flex items-center justify-between sm:justify-start gap-4">
+              <h2 className="text-2xl font-bold text-foreground">
+                Available Content
+              </h2>
+              <span className="text-sm text-muted-foreground">
+                {filteredContents.length} of {contents.length} items
+              </span>
+            </div>
+            
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search content..."
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
 
           {loading ? (
@@ -132,11 +163,27 @@ export default function Index() {
                 </div>
               ))}
             </div>
-          ) : contents.length === 0 ? (
+          ) : filteredContents.length === 0 ? (
             <div className="text-center py-20 glass rounded-2xl">
-              <Zap className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-foreground mb-2">No Content Available</h3>
-              <p className="text-muted-foreground">Check back later for new content!</p>
+              {searchQuery ? (
+                <>
+                  <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-foreground mb-2">No Results Found</h3>
+                  <p className="text-muted-foreground">Try a different search term</p>
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="mt-4 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                  >
+                    Clear search
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Zap className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-foreground mb-2">No Content Available</h3>
+                  <p className="text-muted-foreground">Check back later for new content!</p>
+                </>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
