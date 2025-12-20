@@ -15,11 +15,13 @@ import {
   Plus,
   Pencil,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  BarChart2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ContentFormModal } from '@/components/admin/ContentFormModal';
 import { SettingsPanel } from '@/components/admin/SettingsPanel';
+import { AdminAnalytics } from '@/components/AdminAnalytics';
 
 interface Stats {
   totalContents: number;
@@ -259,6 +261,23 @@ export default function AdminDashboard() {
               </div>
             </div>
 
+            {/* Enhanced Analytics Section */}
+            <AdminAnalytics 
+              data={{
+                totalContents: stats.totalContents,
+                totalViews: stats.totalViews,
+                totalUnlocks: stats.totalUnlocks,
+                estimatedEarnings: stats.estimatedEarnings,
+                contents: contents.map(c => ({
+                  id: c.id,
+                  title: c.title,
+                  views: c.views,
+                  unlocks: c.unlocks,
+                  required_ads: c.required_ads
+                }))
+              }}
+            />
+
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-4">Recent Content</h3>
               <div className="glass rounded-2xl overflow-hidden">
@@ -269,28 +288,42 @@ export default function AdminDashboard() {
                       <th className="text-left text-sm font-medium text-muted-foreground px-6 py-4">Status</th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-6 py-4">Views</th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-6 py-4">Unlocks</th>
+                      <th className="text-left text-sm font-medium text-muted-foreground px-6 py-4">Conv. Rate</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {contents.slice(0, 5).map((content) => (
-                      <tr key={content.id} className="border-t border-border">
-                        <td className="px-6 py-4 text-foreground">{content.title}</td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            content.status === 'active' 
-                              ? 'bg-green-500/20 text-green-400' 
-                              : 'bg-muted text-muted-foreground'
-                          }`}>
-                            {content.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-muted-foreground">{content.views}</td>
-                        <td className="px-6 py-4 text-muted-foreground">{content.unlocks}</td>
-                      </tr>
-                    ))}
+                    {contents.slice(0, 5).map((content) => {
+                      const convRate = content.views > 0 
+                        ? ((content.unlocks / content.views) * 100).toFixed(1) 
+                        : '0';
+                      return (
+                        <tr key={content.id} className="border-t border-border">
+                          <td className="px-6 py-4 text-foreground">{content.title}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              content.status === 'active' 
+                                ? 'bg-green-500/20 text-green-400' 
+                                : 'bg-muted text-muted-foreground'
+                            }`}>
+                              {content.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-muted-foreground">{content.views}</td>
+                          <td className="px-6 py-4 text-muted-foreground">{content.unlocks}</td>
+                          <td className="px-6 py-4">
+                            <span className={`font-medium ${
+                              parseFloat(convRate) >= 10 ? 'text-green-400' : 
+                              parseFloat(convRate) >= 5 ? 'text-yellow-400' : 'text-muted-foreground'
+                            }`}>
+                              {convRate}%
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                     {contents.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
+                        <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
                           No content yet. Add your first content!
                         </td>
                       </tr>
