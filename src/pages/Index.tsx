@@ -7,19 +7,39 @@ import { AdvertisementBanner } from '@/components/AdvertisementBanner';
 import { FeaturedContent } from '@/components/FeaturedContent';
 import { ExitIntentPopup } from '@/components/ExitIntentPopup';
 import { InterstitialAd } from '@/components/InterstitialAd';
+import { ContentFilters, SortOption } from '@/components/ContentFilters';
+import { TimedOfferBanner } from '@/components/TimedOfferBanner';
+import { ProgressTracker } from '@/components/ProgressTracker';
+import { VideoAdModal } from '@/components/VideoAdModal';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { api, Content } from '@/lib/api';
 import { Zap, TrendingUp, Shield, Search, X } from 'lucide-react';
+
 export default function Index() {
   const [contents, setContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('popular');
+  const [filterByAds, setFilterByAds] = useState<number | null>(null);
+  const [showVideoAd, setShowVideoAd] = useState(false);
   const { showAd, closeAd, incrementPageView } = useInterstitialAd();
 
   useEffect(() => {
     fetchContents();
   }, []);
+
+  // Show video ad on first visit (once per session)
+  useEffect(() => {
+    const hasSeenVideoAd = sessionStorage.getItem('seen_video_ad');
+    if (!hasSeenVideoAd && contents.length > 0) {
+      const timer = setTimeout(() => {
+        setShowVideoAd(true);
+        sessionStorage.setItem('seen_video_ad', 'true');
+      }, 5000); // Show after 5 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [contents]);
 
   async function fetchContents() {
     try {
@@ -31,14 +51,48 @@ export default function Index() {
     setLoading(false);
   }
 
-  const filteredContents = useMemo(() => {
-    if (!searchQuery.trim()) return contents;
-    const query = searchQuery.toLowerCase().trim();
-    return contents.filter(content => 
-      content.title.toLowerCase().includes(query) ||
-      (content.description && content.description.toLowerCase().includes(query))
-    );
-  }, [contents, searchQuery]);
+  const filteredAndSortedContents = useMemo(() => {
+    let result = [...contents];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(content => 
+        content.title.toLowerCase().includes(query) ||
+        (content.description && content.description.toLowerCase().includes(query))
+      );
+    }
+
+    // Apply ad count filter
+    if (filterByAds !== null) {
+      if (filterByAds === 3) {
+        result = result.filter(content => content.required_ads >= 3);
+      } else {
+        result = result.filter(content => content.required_ads === filterByAds);
+      }
+    }
+
+    // Apply sorting
+    switch (sortBy) {
+      case 'popular':
+        result.sort((a, b) => b.views - a.views);
+        break;
+      case 'newest':
+        result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+      case 'unlocks':
+        result.sort((a, b) => b.unlocks - a.unlocks);
+        break;
+      case 'ads-low':
+        result.sort((a, b) => a.required_ads - b.required_ads);
+        break;
+      case 'ads-high':
+        result.sort((a, b) => b.required_ads - a.required_ads);
+        break;
+    }
+
+    return result;
+  }, [contents, searchQuery, sortBy, filterByAds]);
 
   function handleContentClick(content: Content) {
     incrementPageView();
@@ -48,7 +102,7 @@ export default function Index() {
   function renderContentWithAds() {
     const items: JSX.Element[] = [];
     
-    filteredContents.forEach((content, index) => {
+    filteredAndSortedContents.forEach((content, index) => {
       items.push(
         <ContentCard
           key={content.id}
@@ -63,7 +117,8 @@ export default function Index() {
         />
       );
 
-      if ((index + 1) % 4 === 0 && index < filteredContents.length - 1) {
+      // Insert ad banner every 4 items
+      if ((index + 1) % 4 === 0 && index < filteredAndSortedContents.length - 1) {
         items.push(
           <div key={`ad-${index}`} className="col-span-full">
             <AdBanner className="h-32" />
@@ -79,6 +134,7 @@ export default function Index() {
     <div className="min-h-screen">
       <ExitIntentPopup />
       <InterstitialAd isOpen={showAd} onClose={closeAd} />
+      <VideoAdModal isOpen={showVideoAd} onClose={() => setShowVideoAd(false)} />
       <Header />
       
       <section className="pt-32 pb-16 px-4">
@@ -114,6 +170,13 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Timed Offer Banner */}
+      <section className="px-4 pb-6">
+        <div className="container mx-auto max-w-4xl">
+          <TimedOfferBanner />
+        </div>
+      </section>
+
       <section className="px-4 pb-8">
         <div className="container mx-auto">
           <AdBanner className="max-w-4xl mx-auto h-28" />
@@ -126,6 +189,13 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Progress Tracker */}
+      <section className="px-4 pb-6">
+        <div className="container mx-auto max-w-md">
+          <ProgressTracker />
+        </div>
+      </section>
+
       {/* Featured Content Section */}
       {contents.length > 0 && (
         <FeaturedContent contents={contents} onContentClick={handleContentClick} />
@@ -133,34 +203,44 @@ export default function Index() {
 
       <section className="px-4 pb-20">
         <div className="container mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <div className="flex items-center justify-between sm:justify-start gap-4">
-              <h2 className="text-2xl font-bold text-foreground">
-                Available Content
-              </h2>
-              <span className="text-sm text-muted-foreground">
-                {filteredContents.length} of {contents.length} items
-              </span>
+          <div className="flex flex-col gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center justify-between sm:justify-start gap-4">
+                <h2 className="text-2xl font-bold text-foreground">
+                  Available Content
+                </h2>
+                <span className="text-sm text-muted-foreground">
+                  {filteredAndSortedContents.length} of {contents.length} items
+                </span>
+              </div>
+              
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search content..."
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
-            
-            <div className="relative w-full sm:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search content..."
-                className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
+
+            {/* Filters and Sorting */}
+            <ContentFilters
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              filterByAds={filterByAds}
+              onFilterChange={setFilterByAds}
+            />
           </div>
 
           {loading ? (
@@ -175,18 +255,21 @@ export default function Index() {
                 </div>
               ))}
             </div>
-          ) : filteredContents.length === 0 ? (
+          ) : filteredAndSortedContents.length === 0 ? (
             <div className="text-center py-20 glass rounded-2xl">
-              {searchQuery ? (
+              {searchQuery || filterByAds !== null ? (
                 <>
                   <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-foreground mb-2">No Results Found</h3>
-                  <p className="text-muted-foreground">Try a different search term</p>
+                  <p className="text-muted-foreground">Try a different search term or filter</p>
                   <button
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => {
+                      setSearchQuery('');
+                      setFilterByAds(null);
+                    }}
                     className="mt-4 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                   >
-                    Clear search
+                    Clear filters
                   </button>
                 </>
               ) : (
