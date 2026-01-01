@@ -11,7 +11,10 @@ import { ContentFilters, SortOption } from '@/components/ContentFilters';
 import { TimedOfferBanner } from '@/components/TimedOfferBanner';
 import { ProgressTracker } from '@/components/ProgressTracker';
 import { VideoAdModal } from '@/components/VideoAdModal';
+import { SEOHead } from '@/components/SEOHead';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
+import { useSEO, generateFAQSchema } from '@/hooks/useSEO';
+import { useABTest } from '@/hooks/useABTest';
 import { api, Content } from '@/lib/api';
 import { Zap, TrendingUp, Shield, Search, X } from 'lucide-react';
 
@@ -24,6 +27,42 @@ export default function Index() {
   const [filterByAds, setFilterByAds] = useState<number | null>(null);
   const [showVideoAd, setShowVideoAd] = useState(false);
   const { showAd, closeAd, incrementPageView } = useInterstitialAd();
+
+  // SEO optimization
+  useSEO({
+    title: undefined, // Uses default homepage title
+    description: 'Unlock premium content by watching a few ads. Fast, secure, and no sign-up required. Download exclusive files, APKs, and more.',
+    url: '/',
+    keywords: ['content locker', 'premium downloads', 'free downloads', 'APK downloads', 'unlock content'],
+  });
+
+  // A/B Testing for CTA and Featured section
+  const ctaTest = useABTest('CTA_BUTTON_TEXT');
+  const featuredTest = useABTest('FEATURED_SECTION');
+  const urgencyTest = useABTest('URGENCY_DISPLAY');
+
+  // Track impressions
+  useEffect(() => {
+    ctaTest.trackImpression();
+    featuredTest.trackImpression();
+    urgencyTest.trackImpression();
+  }, []);
+
+  // FAQ Schema for SEO
+  const faqSchema = generateFAQSchema([
+    {
+      question: 'How does ADNEXUS work?',
+      answer: 'Watch a few short ads to unlock premium content instantly. No sign-up required.',
+    },
+    {
+      question: 'Is it free to use?',
+      answer: 'Yes! ADNEXUS is completely free. You just watch ads to unlock content.',
+    },
+    {
+      question: 'How many ads do I need to watch?',
+      answer: 'The number of ads varies by content, typically 1-3 ads per unlock.',
+    },
+  ]);
 
   useEffect(() => {
     fetchContents();
@@ -132,6 +171,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen">
+      <SEOHead jsonLd={faqSchema} />
       <ExitIntentPopup />
       <InterstitialAd isOpen={showAd} onClose={closeAd} />
       <VideoAdModal isOpen={showVideoAd} onClose={() => setShowVideoAd(false)} />
