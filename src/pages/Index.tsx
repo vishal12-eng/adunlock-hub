@@ -12,6 +12,11 @@ import { TimedOfferBanner } from '@/components/TimedOfferBanner';
 import { ProgressTracker } from '@/components/ProgressTracker';
 import { VideoAdModal } from '@/components/VideoAdModal';
 import { SEOHead } from '@/components/SEOHead';
+import { CategoryTags, detectCategory, CATEGORIES } from '@/components/CategoryTags';
+import { ReferralWidget, checkReferralCode } from '@/components/ReferralSystem';
+import { DailyRewardsWidget } from '@/components/DailyRewards';
+import { EmailCollector, InlineEmailCollector } from '@/components/EmailCollector';
+import { PushNotificationPrompt } from '@/components/PushNotifications';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateFAQSchema } from '@/hooks/useSEO';
 import { useABTest } from '@/hooks/useABTest';
@@ -25,8 +30,14 @@ export default function Index() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('popular');
   const [filterByAds, setFilterByAds] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [showVideoAd, setShowVideoAd] = useState(false);
   const { showAd, closeAd, incrementPageView } = useInterstitialAd();
+
+  // Check for referral code on page load
+  useEffect(() => {
+    checkReferralCode();
+  }, []);
 
   // SEO optimization
   useSEO({
@@ -90,8 +101,26 @@ export default function Index() {
     setLoading(false);
   }
 
+  // Calculate category counts for badges
+  const contentCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    contents.forEach(content => {
+      const category = detectCategory(content.title, content.description);
+      counts[category] = (counts[category] || 0) + 1;
+    });
+    return counts;
+  }, [contents]);
+
   const filteredAndSortedContents = useMemo(() => {
     let result = [...contents];
+
+    // Apply category filter
+    if (selectedCategory !== 'all') {
+      result = result.filter(content => {
+        const category = detectCategory(content.title, content.description);
+        return category === selectedCategory;
+      });
+    }
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -131,7 +160,7 @@ export default function Index() {
     }
 
     return result;
-  }, [contents, searchQuery, sortBy, filterByAds]);
+  }, [contents, searchQuery, sortBy, filterByAds, selectedCategory]);
 
   function handleContentClick(content: Content) {
     incrementPageView();
@@ -175,6 +204,8 @@ export default function Index() {
       <ExitIntentPopup />
       <InterstitialAd isOpen={showAd} onClose={closeAd} />
       <VideoAdModal isOpen={showVideoAd} onClose={() => setShowVideoAd(false)} />
+      <EmailCollector trigger="auto" />
+      <PushNotificationPrompt />
       <Header />
       
       <section className="pt-32 pb-16 px-4">
@@ -229,10 +260,25 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Progress Tracker */}
+      {/* Progress Tracker & Rewards */}
       <section className="px-4 pb-6">
-        <div className="container mx-auto max-w-md">
-          <ProgressTracker />
+        <div className="container mx-auto max-w-4xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <ProgressTracker />
+            <DailyRewardsWidget variant="compact" />
+            <ReferralWidget variant="compact" />
+          </div>
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section className="px-4 pb-6">
+        <div className="container mx-auto">
+          <CategoryTags 
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            contentCounts={contentCounts}
+          />
         </div>
       </section>
 
@@ -325,6 +371,13 @@ export default function Index() {
               {renderContentWithAds()}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Email Collection Section */}
+      <section className="px-4 pb-8">
+        <div className="container mx-auto max-w-md">
+          <InlineEmailCollector />
         </div>
       </section>
 
