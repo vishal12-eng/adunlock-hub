@@ -16,12 +16,14 @@ import {
   Pencil,
   Trash2,
   ExternalLink,
-  BarChart2
+  BarChart2,
+  FlaskConical
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ContentFormModal } from '@/components/admin/ContentFormModal';
 import { SettingsPanel } from '@/components/admin/SettingsPanel';
 import { AdminAnalytics } from '@/components/AdminAnalytics';
+import { ABTestingPanel } from '@/components/admin/ABTestingPanel';
 
 interface Stats {
   totalContents: number;
@@ -34,7 +36,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
   
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'contents' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'contents' | 'abtesting' | 'settings'>('dashboard');
   const [contents, setContents] = useState<Content[]>([]);
   const [stats, setStats] = useState<Stats>({
     totalContents: 0,
@@ -178,6 +180,18 @@ export default function AdminDashboard() {
           >
             <FileBox className="w-5 h-5" />
             Content Manager
+          </button>
+          <button
+            onClick={() => setActiveTab('abtesting')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+              activeTab === 'abtesting' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
+            data-testid="nav-abtesting"
+          >
+            <FlaskConical className="w-5 h-5" />
+            A/B Testing
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -469,6 +483,10 @@ export default function AdminDashboard() {
               </table>
             </div>
           </div>
+        )}
+
+        {activeTab === 'abtesting' && (
+          <ABTestingPanel />
         )}
 
         {activeTab === 'settings' && (

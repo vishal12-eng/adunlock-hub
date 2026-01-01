@@ -4,7 +4,10 @@ import { Header } from '@/components/Header';
 import { RelatedContent } from '@/components/RelatedContent';
 import { SocialShare } from '@/components/SocialShare';
 import { InterstitialAd } from '@/components/InterstitialAd';
+import { SEOHead } from '@/components/SEOHead';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
+import { useSEO, generateContentSchema, generateBreadcrumbSchema } from '@/hooks/useSEO';
+import { useABTest } from '@/hooks/useABTest';
 import { api, Content, UserSession, ApiError } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
 import { 
@@ -39,6 +42,41 @@ export default function UnlockPage() {
   const cooldownRef = useRef<NodeJS.Timeout | null>(null);
   
   const { showAd, closeAd, incrementPageView } = useInterstitialAd();
+
+  // A/B Testing
+  const ctaTest = useABTest('CTA_BUTTON_COLOR');
+
+  // Dynamic SEO based on content
+  useSEO({
+    title: content?.title,
+    description: content?.description || `Unlock "${content?.title}" by watching a few ads. Fast, secure download.`,
+    url: `/unlock/${contentId}`,
+    type: 'article',
+    image: content?.thumbnail_url || undefined,
+    keywords: ['unlock', 'download', content?.title || ''].filter(Boolean),
+  });
+
+  // Generate structured data for content
+  const contentSchema = content ? generateContentSchema({
+    id: content.id,
+    title: content.title,
+    description: content.description,
+    thumbnailUrl: content.thumbnail_url,
+    views: content.views,
+    unlocks: content.unlocks,
+  }) : null;
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: content?.title || 'Content', url: `/unlock/${contentId}` },
+  ]);
+
+  // Track A/B test impression
+  useEffect(() => {
+    if (content) {
+      ctaTest.trackImpression();
+    }
+  }, [content]);
 
   const fetchData = useCallback(async () => {
     if (!contentId) return;
@@ -218,6 +256,7 @@ export default function UnlockPage() {
 
   return (
     <div className="min-h-screen">
+      <SEOHead jsonLd={[contentSchema, breadcrumbSchema].filter(Boolean)} />
       <InterstitialAd isOpen={showAd} onClose={closeAd} />
       <Header />
       
