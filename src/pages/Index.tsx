@@ -13,7 +13,8 @@ import { ProgressTracker } from '@/components/ProgressTracker';
 import { VideoAdModal } from '@/components/VideoAdModal';
 import { SEOHead } from '@/components/SEOHead';
 import { CategoryTags, detectCategory, CATEGORIES } from '@/components/CategoryTags';
-import { ReferralWidget, checkReferralCode } from '@/components/ReferralSystem';
+import { ReferralWidgetCompact } from '@/components/referral/ReferralWidgets';
+import { processIncomingReferral } from '@/lib/referral';
 import { DailyRewardsWidget } from '@/components/DailyRewards';
 import { EmailCollector, InlineEmailCollector } from '@/components/EmailCollector';
 import { PushNotificationPrompt } from '@/components/PushNotifications';
@@ -36,7 +37,7 @@ export default function Index() {
 
   // Check for referral code on page load
   useEffect(() => {
-    checkReferralCode();
+    processIncomingReferral();
   }, []);
 
   // SEO optimization
@@ -266,7 +267,7 @@ export default function Index() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <ProgressTracker />
             <DailyRewardsWidget variant="compact" />
-            <ReferralWidget variant="compact" />
+            <ReferralWidgetCompact />
           </div>
         </div>
       </section>
