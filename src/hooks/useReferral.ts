@@ -18,6 +18,12 @@ import {
   purchasePriorityUnlock,
   getAdsReduction,
   calculateEffectiveAds,
+  useCoinsToSkipAd as useCoinsToSkipAdLib,
+  useCoinsForFullUnlock as useCoinsForFullUnlockLib,
+  getAdminConfig,
+  canAffordAdSkip,
+  canAffordFullUnlock,
+  RewardConfig,
 } from '@/lib/referral/rewards';
 
 export interface UseReferralReturn {
@@ -42,9 +48,14 @@ export interface UseReferralReturn {
   buyPriorityUnlock: () => boolean;
   recordUnlock: () => void;
   calculateEffectiveAds: (baseAds: number) => number;
+  // New spending actions
+  useCoinsToSkipAd: () => boolean;
+  useCoinsForFullUnlock: () => boolean;
+  canAffordAdSkip: () => boolean;
+  canAffordFullUnlock: () => boolean;
   
   // Config
-  config: typeof DEFAULT_REWARD_CONFIG;
+  config: RewardConfig;
   
   // State
   isLoading: boolean;
@@ -178,6 +189,42 @@ export function useReferral(): UseReferralReturn {
     setStats(getReferralStats());
   }, []);
 
+  const useCoinsToSkipAd = useCallback(() => {
+    const config = getAdminConfig();
+    const success = useCoinsToSkipAdLib(config);
+    if (success) {
+      setStats(getReferralStats());
+      toast.success('Ad skipped with coins!', {
+        description: `Used ${config.coinsPerAdSkip} coins`,
+      });
+    } else {
+      toast.error('Not enough coins to skip ad');
+    }
+    return success;
+  }, []);
+
+  const useCoinsForFullUnlockAction = useCallback(() => {
+    const config = getAdminConfig();
+    const success = useCoinsForFullUnlockLib(config);
+    if (success) {
+      setStats(getReferralStats());
+      toast.success('Content unlocked with coins!', {
+        description: `Used ${config.coinsForFullUnlock} coins`,
+      });
+    } else {
+      toast.error('Not enough coins for full unlock');
+    }
+    return success;
+  }, []);
+
+  const canAffordAdSkipCheck = useCallback(() => {
+    return canAffordAdSkip(getAdminConfig());
+  }, []);
+
+  const canAffordFullUnlockCheck = useCallback(() => {
+    return canAffordFullUnlock(getAdminConfig());
+  }, []);
+
   return {
     // Referral data
     referralCode: referralData?.myReferralCode || '',
@@ -200,9 +247,14 @@ export function useReferral(): UseReferralReturn {
     buyPriorityUnlock,
     recordUnlock,
     calculateEffectiveAds,
+    // New spending actions
+    useCoinsToSkipAd,
+    useCoinsForFullUnlock: useCoinsForFullUnlockAction,
+    canAffordAdSkip: canAffordAdSkipCheck,
+    canAffordFullUnlock: canAffordFullUnlockCheck,
 
     // Config
-    config: DEFAULT_REWARD_CONFIG,
+    config: getAdminConfig(),
 
     // State
     isLoading,

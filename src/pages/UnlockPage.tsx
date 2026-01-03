@@ -8,6 +8,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateContentSchema, generateBreadcrumbSchema } from '@/hooks/useSEO';
 import { useABTest } from '@/hooks/useABTest';
+import { useReferral } from '@/hooks/useReferral';
 import { api, Content, UserSession, ApiError } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
 import { 
@@ -18,7 +19,11 @@ import {
   ArrowLeft,
   Download,
   Play,
-  Clock
+  Clock,
+  Coins,
+  CreditCard,
+  Zap,
+  Gift
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -42,6 +47,21 @@ export default function UnlockPage() {
   const cooldownRef = useRef<NodeJS.Timeout | null>(null);
   
   const { showAd, closeAd, incrementPageView } = useInterstitialAd();
+  
+  // Referral rewards hook
+  const { 
+    coins, 
+    bonusUnlocks, 
+    adsReduction,
+    useBonusUnlock, 
+    useCoinsToSkipAd,
+    useCoinsForFullUnlock,
+    canAffordAdSkip,
+    canAffordFullUnlock,
+    config: rewardConfig,
+    recordUnlock,
+    calculateEffectiveAds
+  } = useReferral();
 
   // A/B Testing
   const ctaTest = useABTest('CTA_BUTTON_COLOR');
@@ -348,6 +368,83 @@ export default function UnlockPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Rewards Options - Show if user has rewards */}
+              {!isCompleted && (bonusUnlocks > 0 || coins > 0) && (
+                <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Gift className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground">Use Your Rewards</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Use Unlock Card */}
+                    {bonusUnlocks > 0 && (
+                      <button
+                        onClick={() => {
+                          if (useBonusUnlock()) {
+                            recordUnlock();
+                            // Mark session as completed
+                            setSession(prev => prev ? { ...prev, completed: true, ads_watched: prev.ads_required } : null);
+                          }
+                        }}
+                        className="flex items-center justify-center gap-2 p-3 rounded-lg bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 transition-all text-sm font-medium text-green-400"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        Use Unlock Card ({bonusUnlocks})
+                      </button>
+                    )}
+                    
+                    {/* Use Coins for Full Unlock */}
+                    {canAffordFullUnlock() && (
+                      <button
+                        onClick={() => {
+                          if (useCoinsForFullUnlock()) {
+                            recordUnlock();
+                            setSession(prev => prev ? { ...prev, completed: true, ads_watched: prev.ads_required } : null);
+                          }
+                        }}
+                        className="flex items-center justify-center gap-2 p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/30 hover:bg-yellow-500/30 transition-all text-sm font-medium text-yellow-400"
+                      >
+                        <Coins className="w-4 h-4" />
+                        Full Unlock ({rewardConfig.coinsForFullUnlock} coins)
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Skip Single Ad with Coins */}
+                  {!isWaitingForAd && canAffordAdSkip() && session.ads_watched < session.ads_required && (
+                    <button
+                      onClick={() => {
+                        if (useCoinsToSkipAd()) {
+                          const newAdsWatched = session.ads_watched + 1;
+                          const isNowCompleted = newAdsWatched >= session.ads_required;
+                          setSession(prev => prev ? { 
+                            ...prev, 
+                            ads_watched: newAdsWatched,
+                            completed: isNowCompleted 
+                          } : null);
+                          if (isNowCompleted) {
+                            recordUnlock();
+                            toast.success('Content unlocked!');
+                          }
+                        }
+                      }}
+                      className="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all text-xs font-medium text-primary"
+                    >
+                      <Zap className="w-3 h-3" />
+                      Skip 1 Ad ({rewardConfig.coinsPerAdSkip} coins) - You have {coins} coins
+                    </button>
+                  )}
+                  
+                  {/* Ads Reduction Info */}
+                  {adsReduction > 0 && (
+                    <p className="text-xs text-center text-muted-foreground">
+                      You have <span className="text-accent font-semibold">{adsReduction}% ads reduction</span> from referrals
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-3">
                 {isCompleted ? (
