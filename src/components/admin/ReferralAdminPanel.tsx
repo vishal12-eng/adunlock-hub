@@ -31,6 +31,11 @@ interface ReferralConfig {
   minUnlocksForValidReferral: number;
   maxRewardsPerDay: number;
   antiFraudStrict: boolean;
+  // New spending options
+  coinsPerAdSkip: number;
+  coinsForFullUnlock: number;
+  welcomeBonusCoins: number;
+  welcomeBonusUnlocks: number;
 }
 
 const DEFAULT_CONFIG: ReferralConfig = {
@@ -44,6 +49,11 @@ const DEFAULT_CONFIG: ReferralConfig = {
   minUnlocksForValidReferral: 1,
   maxRewardsPerDay: 10,
   antiFraudStrict: true,
+  // New spending options
+  coinsPerAdSkip: 50,
+  coinsForFullUnlock: 200,
+  welcomeBonusCoins: 25,
+  welcomeBonusUnlocks: 1,
 };
 
 function getConfig(): ReferralConfig {
@@ -295,7 +305,7 @@ export function ReferralAdminPanel() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="coinsToUnlock">Coins to Buy Unlock</Label>
+              <Label htmlFor="coinsToUnlock">Coins to Buy Unlock Card</Label>
               <Input
                 id="coinsToUnlock"
                 type="number"
@@ -315,6 +325,69 @@ export function ReferralAdminPanel() {
                 min={1}
                 max={100}
               />
+            </div>
+          </div>
+          
+          {/* Spending Options */}
+          <div className="mt-6 pt-4 border-t border-border">
+            <h4 className="font-medium text-foreground mb-4">Coin Spending Options</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="coinsPerAdSkip">Coins to Skip 1 Ad</Label>
+                <Input
+                  id="coinsPerAdSkip"
+                  type="number"
+                  value={config.coinsPerAdSkip}
+                  onChange={(e) => handleChange('coinsPerAdSkip', parseInt(e.target.value) || 0)}
+                  min={1}
+                  max={500}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Cost to skip a single ad during unlock
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="coinsForFullUnlock">Coins for Full Unlock</Label>
+                <Input
+                  id="coinsForFullUnlock"
+                  type="number"
+                  value={config.coinsForFullUnlock}
+                  onChange={(e) => handleChange('coinsForFullUnlock', parseInt(e.target.value) || 0)}
+                  min={1}
+                  max={1000}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Cost to instantly unlock any content
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="welcomeBonusCoins">Welcome Bonus Coins</Label>
+                <Input
+                  id="welcomeBonusCoins"
+                  type="number"
+                  value={config.welcomeBonusCoins}
+                  onChange={(e) => handleChange('welcomeBonusCoins', parseInt(e.target.value) || 0)}
+                  min={0}
+                  max={500}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Coins given to new referred users
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="welcomeBonusUnlocks">Welcome Bonus Unlocks</Label>
+                <Input
+                  id="welcomeBonusUnlocks"
+                  type="number"
+                  value={config.welcomeBonusUnlocks}
+                  onChange={(e) => handleChange('welcomeBonusUnlocks', parseInt(e.target.value) || 0)}
+                  min={0}
+                  max={10}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Unlock cards given to new referred users
+                </p>
+              </div>
             </div>
           </div>
           

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import UnlockPage from "./pages/UnlockPage";
+import Rewards from "./pages/Rewards";
 import AdminAuth from "./pages/AdminAuth";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
@@ -22,6 +23,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/unlock/:contentId" element={<UnlockPage />} />
+            <Route path="/rewards" element={<Rewards />} />
             <Route path="/panel-adnexus-9f3x/login" element={<AdminAuth />} />
             <Route path="/panel-adnexus-9f3x" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />

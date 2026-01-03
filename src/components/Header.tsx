@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { UserBalance } from '@/components/UserBalance';
 
 export function Header() {
   return (
@@ -19,6 +20,8 @@ export function Header() {
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Watch Ads. Unlock Content.</p>
           </div>
         </Link>
+        
+        <UserBalance />
       </div>
     </header>
   );

@@ -2,6 +2,7 @@
 
 const REWARDS_STORAGE_KEY = 'adnexus_ref_rewards';
 const REFERRER_REWARDS_KEY = 'adnexus_referrer_rewards';
+const ADMIN_CONFIG_KEY = 'adnexus_admin_referral_config';
 
 export interface ReferralReward {
   type: 'extra_unlock' | 'reduced_ads' | 'priority_unlock' | 'coins';
@@ -24,8 +25,27 @@ export interface RewardsData {
   lastUpdated: number;
 }
 
+export interface RewardConfig {
+  coinsPerReferral: number;
+  bonusUnlocksPerReferral: number;
+  adsReductionPerReferral: number;
+  maxAdsReduction: number;
+  coinsToUnlock: number;
+  coinsToAdsReduction: number;
+  priorityUnlockCoins: number;
+  priorityUnlockDuration: number;
+  minTimeForValidReferral: number;
+  minUnlocksForValidReferral: number;
+  // New spending options
+  coinsPerAdSkip: number;
+  coinsForFullUnlock: number;
+  welcomeBonusCoins: number;
+  welcomeBonusUnlocks: number;
+  maxRewardsPerDay: number;
+}
+
 // Default reward configuration
-export const DEFAULT_REWARD_CONFIG = {
+export const DEFAULT_REWARD_CONFIG: RewardConfig = {
   coinsPerReferral: 50,
   bonusUnlocksPerReferral: 1,
   adsReductionPerReferral: 10, // 10% reduction
@@ -36,6 +56,12 @@ export const DEFAULT_REWARD_CONFIG = {
   priorityUnlockDuration: 24 * 60 * 60 * 1000, // 24 hours
   minTimeForValidReferral: 60, // 60 seconds
   minUnlocksForValidReferral: 1,
+  // New spending options
+  coinsPerAdSkip: 50, // 50 coins to skip 1 ad
+  coinsForFullUnlock: 200, // 200 coins for instant full unlock
+  welcomeBonusCoins: 25, // Coins for new referred users
+  welcomeBonusUnlocks: 1, // Unlock cards for new referred users
+  maxRewardsPerDay: 10, // Max referral rewards per day
 };
 
 function getRewardsData(): RewardsData {
@@ -228,4 +254,63 @@ export function claimPendingRewards(): ReferralReward[] {
 // Reset rewards (for testing)
 export function resetRewards(): void {
   localStorage.removeItem(REWARDS_STORAGE_KEY);
+}
+
+// Get admin config with overrides
+export function getAdminConfig(): RewardConfig {
+  try {
+    const stored = localStorage.getItem(ADMIN_CONFIG_KEY);
+    if (stored) {
+      return { ...DEFAULT_REWARD_CONFIG, ...JSON.parse(stored) };
+    }
+  } catch {}
+  return DEFAULT_REWARD_CONFIG;
+}
+
+// Use coins to skip a single ad
+export function useCoinsToSkipAd(config = getAdminConfig()): boolean {
+  const data = getRewardsData();
+  
+  if (data.coins >= config.coinsPerAdSkip) {
+    data.coins -= config.coinsPerAdSkip;
+    saveRewardsData(data);
+    return true;
+  }
+  
+  return false;
+}
+
+// Use coins for instant full unlock
+export function useCoinsForFullUnlock(config = getAdminConfig()): boolean {
+  const data = getRewardsData();
+  
+  if (data.coins >= config.coinsForFullUnlock) {
+    data.coins -= config.coinsForFullUnlock;
+    saveRewardsData(data);
+    return true;
+  }
+  
+  return false;
+}
+
+// Check if user can afford to skip ad
+export function canAffordAdSkip(config = getAdminConfig()): boolean {
+  const data = getRewardsData();
+  return data.coins >= config.coinsPerAdSkip;
+}
+
+// Check if user can afford full unlock with coins
+export function canAffordFullUnlock(config = getAdminConfig()): boolean {
+  const data = getRewardsData();
+  return data.coins >= config.coinsForFullUnlock;
+}
+
+// Get current balance summary
+export function getBalanceSummary(): { coins: number; bonusUnlocks: number; adsReduction: number } {
+  const data = getRewardsData();
+  return {
+    coins: data.coins,
+    bonusUnlocks: data.bonusUnlocks,
+    adsReduction: data.adsReduction,
+  };
 }
