@@ -44,13 +44,13 @@ export function ProgressTracker() {
 
   return (
     <div className="relative">
-      <div className="glass rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-primary" />
-            <span className="text-sm font-semibold text-foreground">Session Progress</span>
+      <div className="glass rounded-xl p-3 sm:p-4">
+        <div className="flex items-center justify-between mb-2 sm:mb-3">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <span className="text-xs sm:text-sm font-semibold text-foreground">Session Progress</span>
           </div>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-[10px] sm:text-xs text-muted-foreground">
             {unlockCount} unlocked
           </span>
         </div>
@@ -62,7 +62,7 @@ export function ProgressTracker() {
           />
         </div>
 
-        <p className="text-xs text-muted-foreground">
+        <p className="text-[10px] sm:text-xs text-muted-foreground">
           {unlockCount >= nextMilestone.count 
             ? '🎉 All milestones achieved!' 
             : `${nextMilestone.count - unlockCount} more to reach "${nextMilestone.label}"`
@@ -72,7 +72,7 @@ export function ProgressTracker() {
 
       {/* Celebration popup */}
       {showCelebration && lastMilestone && (
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-bold animate-bounce whitespace-nowrap">
+        <div className="absolute -top-10 sm:-top-12 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary text-primary-foreground rounded-full text-xs sm:text-sm font-bold animate-bounce whitespace-nowrap">
           🎉 {lastMilestone}!
         </div>
       )}

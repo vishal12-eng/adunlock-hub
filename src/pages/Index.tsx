@@ -209,66 +209,77 @@ export default function Index() {
       <PushNotificationPrompt />
       <Header />
       
-      <section className="pt-32 pb-16 px-4">
-        <div className="container mx-auto text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 glass rounded-full animate-fade-in">
-            <Zap className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Premium Content Awaits</span>
+      <section className="pt-24 sm:pt-32 pb-8 sm:pb-16 px-3 sm:px-4">
+        <div className="container mx-auto text-center space-y-4 sm:space-y-6">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full animate-fade-in">
+            <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+            <span className="text-xs sm:text-sm font-medium text-primary">Premium Content Awaits</span>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-bold animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold animate-fade-in" style={{ animationDelay: '0.1s' }}>
             <span className="text-foreground">Unlock </span>
             <span className="text-gradient-neon">Premium Content</span>
           </h1>
           
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-in px-2" style={{ animationDelay: '0.2s' }}>
             Watch a few ads to get instant access to exclusive downloads, files, and premium resources.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4 pt-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <div className="flex items-center gap-2 px-4 py-2 glass rounded-full">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              <span className="text-sm text-foreground">Fast Unlocks</span>
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 pt-4 sm:pt-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full">
+              <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+              <span className="text-xs sm:text-sm text-foreground">Fast Unlocks</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 glass rounded-full">
-              <Shield className="w-4 h-4 text-primary" />
-              <span className="text-sm text-foreground">Secure Downloads</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full">
+              <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+              <span className="text-xs sm:text-sm text-foreground">Secure Downloads</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 glass rounded-full">
-              <Zap className="w-4 h-4 text-primary" />
-              <span className="text-sm text-foreground">No Sign-up Required</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full">
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+              <span className="text-xs sm:text-sm text-foreground">No Sign-up</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Timed Offer Banner */}
-      <section className="px-4 pb-6">
+      <section className="px-3 sm:px-4 pb-4 sm:pb-6">
         <div className="container mx-auto max-w-4xl">
           <TimedOfferBanner />
         </div>
       </section>
 
-      <section className="px-4 pb-8">
+      <section className="px-3 sm:px-4 pb-6 sm:pb-8">
         <div className="container mx-auto">
-          <AdBanner className="max-w-4xl mx-auto h-28" />
+          <AdBanner className="max-w-4xl mx-auto h-20 sm:h-28" />
         </div>
       </section>
 
-      <section className="px-4 pb-6">
+      <section className="px-3 sm:px-4 pb-4 sm:pb-6">
         <div className="container mx-auto">
-          <AdvertisementBanner className="max-w-4xl mx-auto h-32 md:h-40" />
+          <AdvertisementBanner className="max-w-4xl mx-auto h-24 sm:h-32 md:h-40" />
         </div>
       </section>
 
       {/* Progress Tracker & Rewards */}
-      <section className="px-4 pb-6">
+      <section className="px-3 sm:px-4 pb-4 sm:pb-6">
         <div className="container mx-auto max-w-4xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
             <ProgressTracker />
             <DailyRewardsWidget variant="compact" />
             <ReferralWidgetCompact />
           </div>
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section className="px-3 sm:px-4 pb-4 sm:pb-6">
+        <div className="container mx-auto">
+          <CategoryTags 
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            contentCounts={contentCounts}
+          />
         </div>
       </section>
 
@@ -288,15 +299,15 @@ export default function Index() {
         <FeaturedContent contents={contents} onContentClick={handleContentClick} />
       )}
 
-      <section className="px-4 pb-20">
+      <section className="px-3 sm:px-4 pb-12 sm:pb-20">
         <div className="container mx-auto">
-          <div className="flex flex-col gap-4 mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center justify-between sm:justify-start gap-4">
-                <h2 className="text-2xl font-bold text-foreground">
+          <div className="flex flex-col gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+              <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
+                <h2 className="text-lg sm:text-2xl font-bold text-foreground">
                   Available Content
                 </h2>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   {filteredAndSortedContents.length} of {contents.length} items
                 </span>
               </div>
@@ -308,7 +319,7 @@ export default function Index() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search content..."
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  className="w-full pl-10 pr-10 py-2 sm:py-2.5 rounded-xl bg-input border border-border text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                 />
                 {searchQuery && (
                   <button
@@ -331,44 +342,44 @@ export default function Index() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="glass rounded-2xl overflow-hidden animate-pulse">
+                <div key={i} className="glass rounded-xl sm:rounded-2xl overflow-hidden animate-pulse">
                   <div className="aspect-[4/3] bg-muted" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-5 bg-muted rounded w-3/4" />
-                    <div className="h-4 bg-muted rounded w-1/2" />
+                  <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+                    <div className="h-4 sm:h-5 bg-muted rounded w-3/4" />
+                    <div className="h-3 sm:h-4 bg-muted rounded w-1/2" />
                   </div>
                 </div>
               ))}
             </div>
           ) : filteredAndSortedContents.length === 0 ? (
-            <div className="text-center py-20 glass rounded-2xl">
+            <div className="text-center py-12 sm:py-20 glass rounded-xl sm:rounded-2xl">
               {searchQuery || filterByAds !== null ? (
                 <>
-                  <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-foreground mb-2">No Results Found</h3>
-                  <p className="text-muted-foreground">Try a different search term or filter</p>
+                  <Search className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">No Results Found</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">Try a different search term or filter</p>
                   <button
                     onClick={() => {
                       setSearchQuery('');
                       setFilterByAds(null);
                     }}
-                    className="mt-4 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                    className="mt-3 sm:mt-4 px-4 py-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                   >
                     Clear filters
                   </button>
                 </>
               ) : (
                 <>
-                  <Zap className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-foreground mb-2">No Content Available</h3>
-                  <p className="text-muted-foreground">Check back later for new content!</p>
+                  <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                  <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">No Content Available</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">Check back later for new content!</p>
                 </>
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
               {renderContentWithAds()}
             </div>
           )}

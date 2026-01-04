@@ -44,32 +44,32 @@ export function UserBalance() {
           variant="ghost" 
           size="sm"
           className={cn(
-            "gap-2 px-3 h-9 rounded-lg transition-all",
+            "gap-1.5 sm:gap-2 px-2 sm:px-3 h-8 sm:h-9 rounded-lg transition-all text-xs sm:text-sm",
             hasRewards 
               ? "bg-gradient-to-r from-yellow-500/10 to-primary/10 border border-yellow-500/20 hover:border-yellow-500/40" 
               : "bg-secondary/50 hover:bg-secondary"
           )}
         >
-          <div className="flex items-center gap-2">
-            <Coins className="w-4 h-4 text-yellow-400" />
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-400" />
             <span className="font-semibold text-foreground">{coins}</span>
           </div>
           {bonusUnlocks > 0 && (
             <>
-              <div className="w-px h-4 bg-border" />
+              <div className="w-px h-3 sm:h-4 bg-border" />
               <div className="flex items-center gap-1">
-                <CreditCard className="w-4 h-4 text-green-400" />
+                <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400" />
                 <span className="font-semibold text-foreground">{bonusUnlocks}</span>
               </div>
             </>
           )}
           <ChevronDown className={cn(
-            "w-3 h-3 text-muted-foreground transition-transform",
+            "w-3 h-3 text-muted-foreground transition-transform hidden sm:block",
             open && "rotate-180"
           )} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 p-0" align="end">
+      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-72 max-w-72 p-0" align="end" sideOffset={8}>
         <div className="p-4 border-b border-border bg-gradient-to-r from-primary/5 to-accent/5">
           <h4 className="font-semibold text-foreground mb-1">Your Rewards</h4>
           <p className="text-xs text-muted-foreground">Use rewards to unlock content faster</p>

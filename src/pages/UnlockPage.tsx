@@ -280,18 +280,18 @@ export default function UnlockPage() {
       <InterstitialAd isOpen={showAd} onClose={closeAd} />
       <Header />
       
-      <main className="pt-28 pb-20 px-4">
+      <main className="pt-20 sm:pt-28 pb-12 sm:pb-20 px-3 sm:px-4">
         <div className="container mx-auto max-w-2xl">
           <button
             onClick={handleBackClick}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
+            className="flex items-center gap-2 text-sm sm:text-base text-muted-foreground hover:text-foreground transition-colors mb-4 sm:mb-8"
             data-testid="button-back-home"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </button>
 
-          <div className="glass-intense rounded-2xl overflow-hidden neon-border">
+          <div className="glass-intense rounded-xl sm:rounded-2xl overflow-hidden neon-border">
             <div className="relative aspect-video overflow-hidden">
               {content.thumbnail_url ? (
                 <img 
@@ -301,41 +301,41 @@ export default function UnlockPage() {
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
-                  <Lock className="w-20 h-20 text-muted-foreground" />
+                  <Lock className="w-14 h-14 sm:w-20 sm:h-20 text-muted-foreground" />
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
               
-              <div className={`absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full ${
+              <div className={`absolute top-3 sm:top-4 right-3 sm:right-4 flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full ${
                 isCompleted ? 'bg-green-500/20 border border-green-500/50' : 'glass'
               }`}>
                 {isCompleted ? (
                   <>
-                    <CheckCircle className="w-4 h-4 text-green-400" />
-                    <span className="text-sm font-medium text-green-400">Unlocked</span>
+                    <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-400" />
+                    <span className="text-xs sm:text-sm font-medium text-green-400">Unlocked</span>
                   </>
                 ) : (
                   <>
-                    <Lock className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium text-primary">Locked</span>
+                    <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                    <span className="text-xs sm:text-sm font-medium text-primary">Locked</span>
                   </>
                 )}
               </div>
             </div>
 
-            <div className="p-6 space-y-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <h1 className="text-2xl font-bold text-foreground mb-2" data-testid="text-content-title">{content.title}</h1>
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-1 sm:mb-2" data-testid="text-content-title">{content.title}</h1>
                   {content.description && (
-                    <p className="text-muted-foreground">{content.description}</p>
+                    <p className="text-sm sm:text-base text-muted-foreground line-clamp-2 sm:line-clamp-none">{content.description}</p>
                   )}
                 </div>
                 <SocialShare title={content.title} contentId={content.id} />
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between text-sm">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Progress</span>
                   <span className="font-semibold text-foreground" data-testid="text-progress">
                     {session.ads_watched} / {session.ads_required} Ads Watched
@@ -349,35 +349,35 @@ export default function UnlockPage() {
                   />
                 </div>
 
-                <p className="text-center text-sm text-muted-foreground">
+                <p className="text-center text-xs sm:text-sm text-muted-foreground">
                   This content requires <span className="font-semibold text-primary">{session.ads_required} ads</span> to unlock
                 </p>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="glass rounded-xl p-4 text-center">
-                    <p className="text-2xl font-bold text-primary">{session.ads_required}</p>
-                    <p className="text-xs text-muted-foreground">Required</p>
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                  <div className="glass rounded-lg sm:rounded-xl p-2.5 sm:p-4 text-center">
+                    <p className="text-lg sm:text-2xl font-bold text-primary">{session.ads_required}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Required</p>
                   </div>
-                  <div className="glass rounded-xl p-4 text-center">
-                    <p className="text-2xl font-bold text-foreground">{session.ads_watched}</p>
-                    <p className="text-xs text-muted-foreground">Watched</p>
+                  <div className="glass rounded-lg sm:rounded-xl p-2.5 sm:p-4 text-center">
+                    <p className="text-lg sm:text-2xl font-bold text-foreground">{session.ads_watched}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Watched</p>
                   </div>
-                  <div className="glass rounded-xl p-4 text-center">
-                    <p className="text-2xl font-bold text-accent">{session.ads_required - session.ads_watched}</p>
-                    <p className="text-xs text-muted-foreground">Remaining</p>
+                  <div className="glass rounded-lg sm:rounded-xl p-2.5 sm:p-4 text-center">
+                    <p className="text-lg sm:text-2xl font-bold text-accent">{session.ads_required - session.ads_watched}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Remaining</p>
                   </div>
                 </div>
               </div>
 
               {/* Rewards Options - Show if user has rewards */}
               {!isCompleted && (bonusUnlocks > 0 || coins > 0) && (
-                <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 space-y-3">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Gift className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium text-foreground">Use Your Rewards</span>
+                <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 space-y-2 sm:space-y-3">
+                  <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                    <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                    <span className="text-xs sm:text-sm font-medium text-foreground">Use Your Rewards</span>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
                     {/* Use Unlock Card */}
                     {bonusUnlocks > 0 && (
                       <button
@@ -388,10 +388,10 @@ export default function UnlockPage() {
                             setSession(prev => prev ? { ...prev, completed: true, ads_watched: prev.ads_required } : null);
                           }
                         }}
-                        className="flex items-center justify-center gap-2 p-3 rounded-lg bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 transition-all text-sm font-medium text-green-400"
+                        className="flex items-center justify-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-lg bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 transition-all text-xs sm:text-sm font-medium text-green-400"
                       >
-                        <CreditCard className="w-4 h-4" />
-                        Use Unlock Card ({bonusUnlocks})
+                        <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <span className="truncate">Use Unlock Card ({bonusUnlocks})</span>
                       </button>
                     )}
                     
@@ -404,10 +404,10 @@ export default function UnlockPage() {
                             setSession(prev => prev ? { ...prev, completed: true, ads_watched: prev.ads_required } : null);
                           }
                         }}
-                        className="flex items-center justify-center gap-2 p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/30 hover:bg-yellow-500/30 transition-all text-sm font-medium text-yellow-400"
+                        className="flex items-center justify-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/30 hover:bg-yellow-500/30 transition-all text-xs sm:text-sm font-medium text-yellow-400"
                       >
-                        <Coins className="w-4 h-4" />
-                        Full Unlock ({rewardConfig.coinsForFullUnlock} coins)
+                        <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <span className="truncate">Full Unlock ({rewardConfig.coinsForFullUnlock} coins)</span>
                       </button>
                     )}
                   </div>
@@ -430,7 +430,7 @@ export default function UnlockPage() {
                           }
                         }
                       }}
-                      className="w-full flex items-center justify-center gap-2 p-2 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all text-xs font-medium text-primary"
+                      className="w-full flex items-center justify-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all text-[10px] sm:text-xs font-medium text-primary"
                     >
                       <Zap className="w-3 h-3" />
                       Skip 1 Ad ({rewardConfig.coinsPerAdSkip} coins) - You have {coins} coins
@@ -439,42 +439,42 @@ export default function UnlockPage() {
                   
                   {/* Ads Reduction Info */}
                   {adsReduction > 0 && (
-                    <p className="text-xs text-center text-muted-foreground">
+                    <p className="text-[10px] sm:text-xs text-center text-muted-foreground">
                       You have <span className="text-accent font-semibold">{adsReduction}% ads reduction</span> from referrals
                     </p>
                   )}
                 </div>
               )}
 
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {isCompleted ? (
                   <button
                     onClick={handleDownload}
-                    className="w-full btn-neon flex items-center justify-center gap-2 py-4 animate-unlock"
+                    className="w-full btn-neon flex items-center justify-center gap-2 py-3 sm:py-4 text-sm sm:text-base animate-unlock"
                     data-testid="button-download"
                   >
                     {content.redirect_url ? (
                       <>
-                        <ExternalLink className="w-5 h-5" />
+                        <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5" />
                         Proceed to Content
                       </>
                     ) : (
                       <>
-                        <Download className="w-5 h-5" />
+                        <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                         Download Now
                       </>
                     )}
                   </button>
                 ) : isWaitingForAd ? (
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {countdown > 0 && (
-                      <div className="glass rounded-xl p-4 text-center">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <Clock className="w-5 h-5 text-primary animate-pulse" />
-                          <span className="text-lg font-semibold text-foreground">Watching Ad...</span>
+                      <div className="glass rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
+                        <div className="flex items-center justify-center gap-2 mb-1 sm:mb-2">
+                          <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary animate-pulse" />
+                          <span className="text-base sm:text-lg font-semibold text-foreground">Watching Ad...</span>
                         </div>
-                        <div className="text-4xl font-bold text-primary mb-2">{countdown}s</div>
-                        <p className="text-sm text-muted-foreground">
+                        <div className="text-3xl sm:text-4xl font-bold text-primary mb-1 sm:mb-2">{countdown}s</div>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           Please wait for the timer to complete
                         </p>
                       </div>
@@ -482,22 +482,22 @@ export default function UnlockPage() {
                     <button
                       onClick={handleCompleteAd}
                       disabled={!canComplete || completing}
-                      className="w-full btn-neon flex items-center justify-center gap-2 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full btn-neon flex items-center justify-center gap-2 py-3 sm:py-4 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                       data-testid="button-continue"
                     >
                       {completing ? (
                         <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                           Verifying...
                         </>
                       ) : canComplete ? (
                         <>
-                          <CheckCircle className="w-5 h-5" />
+                          <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                           Continue
                         </>
                       ) : (
                         <>
-                          <Clock className="w-5 h-5" />
+                          <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                           Wait {countdown}s
                         </>
                       )}
@@ -507,17 +507,17 @@ export default function UnlockPage() {
                   <button
                     onClick={handleWatchAd}
                     disabled={cooldownRemaining > 0}
-                    className="w-full btn-neon flex items-center justify-center gap-2 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full btn-neon flex items-center justify-center gap-2 py-3 sm:py-4 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                     data-testid="button-watch-ad"
                   >
                     {cooldownRemaining > 0 ? (
                       <>
-                        <Clock className="w-5 h-5" />
+                        <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                         Wait {cooldownRemaining}s
                       </>
                     ) : (
                       <>
-                        <Play className="w-5 h-5" />
+                        <Play className="w-4 h-4 sm:w-5 sm:h-5" />
                         Watch Ad ({session.ads_required - session.ads_watched} remaining)
                       </>
                     )}
@@ -525,7 +525,7 @@ export default function UnlockPage() {
                 )}
 
                 {!smartlinkAvailable && !isCompleted && (
-                  <p className="text-center text-sm text-destructive">
+                  <p className="text-center text-xs sm:text-sm text-destructive">
                     Ad service not configured. Please contact admin.
                   </p>
                 )}

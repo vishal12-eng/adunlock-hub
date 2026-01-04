@@ -99,45 +99,45 @@ export function ReferralWidgetCompact() {
   }
   
   return (
-    <div className="glass rounded-xl p-4 hover:border-primary/30 transition-all duration-300">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center relative">
-            <Gift className="w-5 h-5 text-primary" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-pulse" />
+    <div className="glass rounded-xl p-3 sm:p-4 hover:border-primary/30 transition-all duration-300">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center relative flex-shrink-0">
+            <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 sm:w-3 sm:h-3 bg-primary rounded-full animate-pulse" />
           </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">Invite & Earn</p>
-            <p className="text-xs text-muted-foreground">Get free unlocks!</p>
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-foreground truncate">Invite & Earn</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">Get free unlocks!</p>
           </div>
         </div>
         <Button 
           size="sm" 
           onClick={handleCopy} 
           className={cn(
-            "gap-2 transition-all",
+            "gap-1 sm:gap-2 transition-all text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-8 flex-shrink-0",
             copied && "bg-green-500 hover:bg-green-600"
           )}
         >
-          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-          {copied ? 'Copied!' : 'Copy Link'}
+          {copied ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+          <span className="hidden xs:inline">{copied ? 'Copied!' : 'Copy Link'}</span>
         </Button>
       </div>
       
       {(bonusUnlocks > 0 || coins > 0) && (
-        <div className="mt-3 flex gap-2">
+        <div className="mt-2 sm:mt-3 flex gap-2">
           {bonusUnlocks > 0 && (
-            <div className="flex-1 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20">
-              <p className="text-xs text-green-400 flex items-center gap-1">
-                <Trophy className="w-3 h-3" />
-                {bonusUnlocks} bonus unlock{bonusUnlocks > 1 ? 's' : ''}
+            <div className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-green-500/10 border border-green-500/20">
+              <p className="text-[10px] sm:text-xs text-green-400 flex items-center gap-1">
+                <Trophy className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                {bonusUnlocks} unlock{bonusUnlocks > 1 ? 's' : ''}
               </p>
             </div>
           )}
           {coins > 0 && (
-            <div className="flex-1 px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-              <p className="text-xs text-yellow-400 flex items-center gap-1">
-                <Coins className="w-3 h-3" />
+            <div className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+              <p className="text-[10px] sm:text-xs text-yellow-400 flex items-center gap-1">
+                <Coins className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 {coins} coins
               </p>
             </div>

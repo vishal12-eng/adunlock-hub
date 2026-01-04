@@ -15,22 +15,22 @@ export function FeaturedContent({ contents, onContentClick }: FeaturedContentPro
   if (featured.length === 0) return null;
 
   return (
-    <section className="px-4 pb-12">
+    <section className="px-3 sm:px-4 pb-8 sm:pb-12">
       <div className="container mx-auto">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-accent/20 rounded-full">
-            <TrendingUp className="w-4 h-4 text-accent" />
-            <span className="text-sm font-semibold text-accent">Trending Now</span>
+        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-accent/20 rounded-full">
+            <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
+            <span className="text-xs sm:text-sm font-semibold text-accent">Trending Now</span>
           </div>
           <div className="flex-1 h-px bg-gradient-to-r from-accent/50 to-transparent" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {featured.map((content, index) => (
             <button
               key={content.id}
               onClick={() => onContentClick(content)}
-              className={`relative overflow-hidden rounded-2xl text-left transition-all duration-500 group ${
+              className={`relative overflow-hidden rounded-xl sm:rounded-2xl text-left transition-all duration-500 group ${
                 index === 0 ? 'md:col-span-2 md:row-span-2' : ''
               }`}
             >
@@ -44,7 +44,7 @@ export function FeaturedContent({ contents, onContentClick }: FeaturedContentPro
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-accent/30 to-primary/30 flex items-center justify-center">
-                    <Lock className="w-16 h-16 text-muted-foreground" />
+                    <Lock className="w-10 h-10 sm:w-16 sm:h-16 text-muted-foreground" />
                   </div>
                 )}
 
@@ -52,44 +52,44 @@ export function FeaturedContent({ contents, onContentClick }: FeaturedContentPro
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
 
                 {/* Rank badge */}
-                <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 glass rounded-full">
-                  <span className="text-lg font-bold text-primary">#{index + 1}</span>
-                  <TrendingUp className="w-4 h-4 text-primary" />
+                <div className="absolute top-2 sm:top-4 left-2 sm:left-4 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 glass rounded-full">
+                  <span className="text-sm sm:text-lg font-bold text-primary">#{index + 1}</span>
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
                 </div>
 
                 {/* Content info */}
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className={`font-bold text-foreground mb-2 group-hover:text-primary transition-colors ${
-                    index === 0 ? 'text-2xl md:text-3xl' : 'text-lg'
+                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6">
+                  <h3 className={`font-bold text-foreground mb-1 sm:mb-2 group-hover:text-primary transition-colors line-clamp-2 ${
+                    index === 0 ? 'text-base sm:text-2xl md:text-3xl' : 'text-sm sm:text-lg'
                   }`}>
                     {content.title}
                   </h3>
 
                   {content.description && index === 0 && (
-                    <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
+                    <p className="text-muted-foreground text-xs sm:text-sm line-clamp-2 mb-2 sm:mb-4 hidden sm:block">
                       {content.description}
                     </p>
                   )}
 
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Eye className="w-4 h-4" />
-                      <span className="text-sm">{content.views.toLocaleString()}</span>
+                  <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+                    <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground">
+                      <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="text-[10px] sm:text-sm">{content.views.toLocaleString()}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Unlock className="w-4 h-4" />
-                      <span className="text-sm">{content.unlocks.toLocaleString()}</span>
+                    <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground">
+                      <Unlock className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="text-[10px] sm:text-sm">{content.unlocks.toLocaleString()}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-primary ml-auto">
-                      <span className="text-sm font-medium">{content.required_ads} ads</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    <div className="flex items-center gap-1 sm:gap-1.5 text-primary ml-auto">
+                      <span className="text-[10px] sm:text-sm font-medium">{content.required_ads} ads</span>
+                      <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Hover border effect */}
-              <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 rounded-2xl transition-colors duration-300" />
+              <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 rounded-xl sm:rounded-2xl transition-colors duration-300" />
             </button>
           ))}
         </div>
