@@ -45,31 +45,33 @@ interface CategoryTagsProps {
 
 export function CategoryTags({ selectedCategory, onCategoryChange, contentCounts = {} }: CategoryTagsProps) {
   return (
-    <div className="flex flex-wrap gap-2">
-      {CATEGORIES.map((category) => {
-        const count = contentCounts[category.id] || 0;
-        const isSelected = selectedCategory === category.id;
-        
-        return (
-          <button
-            key={category.id}
-            onClick={() => onCategoryChange(category.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              isSelected
-                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                : 'glass hover:bg-primary/10 text-foreground'
-            }`}
-          >
-            <span>{category.icon}</span>
-            <span>{category.name}</span>
-            {category.id !== 'all' && count > 0 && (
-              <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0">
-                {count}
-              </Badge>
-            )}
-          </button>
-        );
-      })}
+    <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="flex sm:flex-wrap gap-2 min-w-max sm:min-w-0">
+        {CATEGORIES.map((category) => {
+          const count = contentCounts[category.id] || 0;
+          const isSelected = selectedCategory === category.id;
+          
+          return (
+            <button
+              key={category.id}
+              onClick={() => onCategoryChange(category.id)}
+              className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
+                isSelected
+                  ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                  : 'glass hover:bg-primary/10 text-foreground'
+              }`}
+            >
+              <span>{category.icon}</span>
+              <span>{category.name}</span>
+              {category.id !== 'all' && count > 0 && (
+                <Badge variant="secondary" className="ml-0.5 sm:ml-1 text-[10px] sm:text-xs px-1 sm:px-1.5 py-0">
+                  {count}
+                </Badge>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

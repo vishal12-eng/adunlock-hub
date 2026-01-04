@@ -44,7 +44,7 @@ export function TimedOfferBanner() {
   if (dismissed || timeLeft <= 0) return null;
 
   return (
-    <div className="relative overflow-hidden glass-intense border-primary/30 rounded-xl p-4 animate-pulse-neon">
+    <div className="relative overflow-hidden glass-intense border-primary/30 rounded-xl p-3 sm:p-4 animate-pulse-neon">
       <button
         onClick={() => setDismissed(true)}
         className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground transition-colors"
@@ -52,19 +52,19 @@ export function TimedOfferBanner() {
         <X className="w-4 h-4" />
       </button>
 
-      <div className="flex items-center justify-center gap-4 flex-wrap">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-center sm:text-left">
         <div className="flex items-center gap-2">
-          <Zap className="w-5 h-5 text-primary animate-pulse" />
-          <span className="text-sm font-bold text-foreground">HAPPY HOUR!</span>
+          <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-primary animate-pulse" />
+          <span className="text-xs sm:text-sm font-bold text-foreground">HAPPY HOUR!</span>
         </div>
         
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Faster unlocks available for limited time
         </p>
         
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/20 rounded-lg">
-          <Clock className="w-4 h-4 text-primary" />
-          <span className="font-mono font-bold text-primary">{formatTime(timeLeft)}</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-primary/20 rounded-lg">
+          <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+          <span className="font-mono font-bold text-sm sm:text-base text-primary">{formatTime(timeLeft)}</span>
         </div>
       </div>
 

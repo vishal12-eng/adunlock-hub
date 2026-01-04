@@ -138,45 +138,45 @@ export function DailyRewardsWidget({ variant = 'compact' }: DailyRewardsWidgetPr
   
   if (variant === 'compact') {
     return (
-      <div className="glass rounded-xl p-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+      <div className="glass rounded-xl p-3 sm:p-4">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
               todayClaimed ? 'bg-green-500/20' : 'bg-primary/20 animate-pulse'
             }`}>
               {todayClaimed ? (
-                <Check className="w-5 h-5 text-green-400" />
+                <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
               ) : (
-                <Gift className="w-5 h-5 text-primary" />
+                <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               )}
             </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">
-                {todayClaimed ? 'Reward Claimed!' : 'Daily Reward'}
+            <div className="min-w-0">
+              <p className="text-xs sm:text-sm font-medium text-foreground truncate">
+                {todayClaimed ? 'Claimed!' : 'Daily Reward'}
               </p>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Flame className="w-3 h-3 text-orange-400" />
+              <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground">
+                <Flame className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-orange-400" />
                 {currentStreak} day streak
               </div>
             </div>
           </div>
           
           {!todayClaimed ? (
-            <Button size="sm" onClick={claimReward} className="gap-2 animate-pulse">
-              <Gift className="w-4 h-4" />
-              Claim
+            <Button size="sm" onClick={claimReward} className="gap-1 sm:gap-2 animate-pulse text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-8 flex-shrink-0">
+              <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Claim</span>
             </Button>
           ) : (
-            <div className="text-xs text-muted-foreground">
+            <div className="text-[10px] sm:text-xs text-muted-foreground text-right flex-shrink-0">
               Tomorrow: {nextDayReward.label}
             </div>
           )}
         </div>
         
         {bonusUnlocks > 0 && (
-          <div className="mt-3 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20">
-            <p className="text-sm text-primary">
-              <Star className="w-4 h-4 inline mr-1" />
+          <div className="mt-2 sm:mt-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-primary/10 border border-primary/20">
+            <p className="text-xs sm:text-sm text-primary">
+              <Star className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
               {bonusUnlocks} bonus unlock{bonusUnlocks > 1 ? 's' : ''} available!
             </p>
           </div>
