@@ -3,10 +3,10 @@ import { UserBalance } from '@/components/UserBalance';
 
 export function Header() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-intense border-b border-border/30">
+    <header className="fixed top-0 left-0 right-0 z-50 glass-intense border-b border-border/30 animate-fade-in">
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between gap-2">
-        <Link to="/" className="flex items-center gap-2 sm:gap-3 group min-w-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex-shrink-0">
+        <Link to="/" className="flex items-center gap-2 sm:gap-3 group min-w-0 touch-active">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
             <img 
               src="/adnexus-logo.png" 
               alt="ADNEXUS logo"
