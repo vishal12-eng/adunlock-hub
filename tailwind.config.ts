@@ -162,6 +162,43 @@ export default {
           "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "confetti-fall": {
+          "0%": { transform: "translateY(-100vh) rotate(0deg)", opacity: "1" },
+          "100%": { transform: "translateY(100vh) rotate(720deg)", opacity: "0" },
+        },
+        "celebrate-pop": {
+          "0%": { transform: "scale(0.5)", opacity: "0" },
+          "50%": { transform: "scale(1.1)" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        "check-bounce": {
+          "0%": { transform: "scale(0)" },
+          "50%": { transform: "scale(1.2)" },
+          "70%": { transform: "scale(0.9)" },
+          "100%": { transform: "scale(1)" },
+        },
+        "coin-flip": {
+          "0%": { transform: "rotateY(0deg)" },
+          "100%": { transform: "rotateY(360deg)" },
+        },
+        "card-slide": {
+          "0%": { transform: "translateX(0) rotate(0deg)", opacity: "1" },
+          "100%": { transform: "translateX(100px) rotate(15deg)", opacity: "0" },
+        },
+        "balance-pulse": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.1)" },
+        },
+        "balance-decrease": {
+          "0%": { color: "hsl(var(--foreground))" },
+          "50%": { color: "hsl(0 84% 60%)" },
+          "100%": { color: "hsl(var(--foreground))" },
+        },
+        "balance-increase": {
+          "0%": { color: "hsl(var(--foreground))" },
+          "50%": { color: "hsl(142 76% 36%)" },
+          "100%": { color: "hsl(var(--foreground))" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -182,6 +219,14 @@ export default {
         "gradient-shift": "gradient-shift 3s ease infinite",
         "spin-slow": "spin-slow 3s linear infinite",
         "stagger-fade": "stagger-fade 0.5s ease-out forwards",
+        "confetti-fall": "confetti-fall 2s ease-out forwards",
+        "celebrate-pop": "celebrate-pop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards",
+        "check-bounce": "check-bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards",
+        "coin-flip": "coin-flip 0.6s ease-in-out",
+        "card-slide": "card-slide 0.4s ease-out forwards",
+        "balance-pulse": "balance-pulse 0.3s ease-in-out",
+        "balance-decrease": "balance-decrease 0.6s ease-out",
+        "balance-increase": "balance-increase 0.6s ease-out",
       },
       backgroundImage: {
         "gradient-neon": "linear-gradient(135deg, hsl(175 100% 50%), hsl(200 100% 50%))",
