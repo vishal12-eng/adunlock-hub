@@ -4,7 +4,9 @@ import { insertContentSchema, insertUserSessionSchema, insertSmartlinkSchema, ty
 import bcrypt from "bcryptjs";
 import { DOMAIN } from "./seo.js";
 import { z } from "zod";
-import adminContentRoutes from "./api/adminContent";
+import adminContentRoutes from "./adminContent.js";
+import { adminApiAuth } from "./middleware/adminApiAuth.js";
+
 
 declare module "express-session" {
   interface SessionData {
@@ -537,5 +539,5 @@ export function registerRoutes(app: Express): void {
     res.set("Cache-Control", "public, max-age=3600");
     res.send(xml);
   });
-  app.use("/api/admin/content", adminContentRoutes);
+  app.use("/api/admin/content",adminApiAuth,adminContentRoutes);
 }
