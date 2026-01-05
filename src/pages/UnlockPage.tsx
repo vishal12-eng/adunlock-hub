@@ -5,10 +5,13 @@ import { RelatedContent } from '@/components/RelatedContent';
 import { SocialShare } from '@/components/SocialShare';
 import { InterstitialAd } from '@/components/InterstitialAd';
 import { SEOHead } from '@/components/SEOHead';
+import { RewardConfirmDialog } from '@/components/RewardConfirmDialog';
+import { RewardCelebration } from '@/components/RewardCelebration';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateContentSchema, generateBreadcrumbSchema } from '@/hooks/useSEO';
 import { useABTest } from '@/hooks/useABTest';
 import { useReferral } from '@/hooks/useReferral';
+import { useRewardSpending } from '@/hooks/useRewardSpending';
 import { api, Content, UserSession, ApiError } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
 import { 
@@ -23,7 +26,8 @@ import {
   Coins,
   CreditCard,
   Zap,
-  Gift
+  Gift,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -53,15 +57,25 @@ export default function UnlockPage() {
     coins, 
     bonusUnlocks, 
     adsReduction,
-    useBonusUnlock, 
-    useCoinsToSkipAd,
-    useCoinsForFullUnlock,
-    canAffordAdSkip,
-    canAffordFullUnlock,
     config: rewardConfig,
     recordUnlock,
     calculateEffectiveAds
   } = useReferral();
+
+  // Reward spending with confirmation dialogs
+  const {
+    pendingAction,
+    isConfirmOpen,
+    isProcessing,
+    showCelebration,
+    celebrationMessage,
+    requestUnlockCard,
+    requestFullUnlock,
+    requestSkipAd,
+    confirmAction,
+    cancelAction,
+    dismissCelebration,
+  } = useRewardSpending();
 
   // A/B Testing
   const ctaTest = useABTest('CTA_BUTTON_COLOR');
@@ -375,6 +389,7 @@ export default function UnlockPage() {
                   <div className="flex items-center gap-2 mb-1 sm:mb-2">
                     <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                     <span className="text-xs sm:text-sm font-medium text-foreground">Use Your Rewards</span>
+                    <Sparkles className="w-3 h-3 text-yellow-400 animate-wiggle" />
                   </div>
                   
                   <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
@@ -382,41 +397,40 @@ export default function UnlockPage() {
                     {bonusUnlocks > 0 && (
                       <button
                         onClick={() => {
-                          if (useBonusUnlock()) {
+                          requestUnlockCard(() => {
                             recordUnlock();
-                            // Mark session as completed
                             setSession(prev => prev ? { ...prev, completed: true, ads_watched: prev.ads_required } : null);
-                          }
+                          });
                         }}
-                        className="flex items-center justify-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-lg bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 transition-all text-xs sm:text-sm font-medium text-green-400"
+                        className="group flex items-center justify-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-lg bg-green-500/20 border border-green-500/30 hover:bg-green-500/30 hover:border-green-500/50 transition-all text-xs sm:text-sm font-medium text-green-400"
                       >
-                        <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:animate-card-slide" />
                         <span className="truncate">Use Unlock Card ({bonusUnlocks})</span>
                       </button>
                     )}
                     
                     {/* Use Coins for Full Unlock */}
-                    {canAffordFullUnlock() && (
+                    {coins >= rewardConfig.coinsForFullUnlock && (
                       <button
                         onClick={() => {
-                          if (useCoinsForFullUnlock()) {
+                          requestFullUnlock(() => {
                             recordUnlock();
                             setSession(prev => prev ? { ...prev, completed: true, ads_watched: prev.ads_required } : null);
-                          }
+                          });
                         }}
-                        className="flex items-center justify-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/30 hover:bg-yellow-500/30 transition-all text-xs sm:text-sm font-medium text-yellow-400"
+                        className="group flex items-center justify-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/30 hover:bg-yellow-500/30 hover:border-yellow-500/50 transition-all text-xs sm:text-sm font-medium text-yellow-400"
                       >
-                        <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:animate-coin-flip" />
                         <span className="truncate">Full Unlock ({rewardConfig.coinsForFullUnlock} coins)</span>
                       </button>
                     )}
                   </div>
                   
                   {/* Skip Single Ad with Coins */}
-                  {!isWaitingForAd && canAffordAdSkip() && session.ads_watched < session.ads_required && (
+                  {!isWaitingForAd && coins >= rewardConfig.coinsPerAdSkip && session.ads_watched < session.ads_required && (
                     <button
                       onClick={() => {
-                        if (useCoinsToSkipAd()) {
+                        requestSkipAd(() => {
                           const newAdsWatched = session.ads_watched + 1;
                           const isNowCompleted = newAdsWatched >= session.ads_required;
                           setSession(prev => prev ? { 
@@ -426,13 +440,12 @@ export default function UnlockPage() {
                           } : null);
                           if (isNowCompleted) {
                             recordUnlock();
-                            toast.success('Content unlocked!');
                           }
-                        }
+                        });
                       }}
-                      className="w-full flex items-center justify-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all text-[10px] sm:text-xs font-medium text-primary"
+                      className="group w-full flex items-center justify-center gap-1.5 sm:gap-2 p-2 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/20 hover:border-primary/40 transition-all text-[10px] sm:text-xs font-medium text-primary"
                     >
-                      <Zap className="w-3 h-3" />
+                      <Zap className="w-3 h-3 group-hover:animate-wiggle" />
                       Skip 1 Ad ({rewardConfig.coinsPerAdSkip} coins) - You have {coins} coins
                     </button>
                   )}
@@ -537,6 +550,24 @@ export default function UnlockPage() {
           <RelatedContent currentContentId={content.id} />
         </div>
       </main>
+
+      {/* Reward Confirmation Dialog */}
+      <RewardConfirmDialog
+        open={isConfirmOpen}
+        onOpenChange={(open) => !open && cancelAction()}
+        onConfirm={confirmAction}
+        type={pendingAction?.type ?? 'unlock-card'}
+        cost={pendingAction?.cost ?? 0}
+        currentBalance={pendingAction?.balance ?? 0}
+        isLoading={isProcessing}
+      />
+
+      {/* Celebration Animation */}
+      <RewardCelebration
+        show={showCelebration}
+        onComplete={dismissCelebration}
+        message={celebrationMessage}
+      />
     </div>
   );
 }
