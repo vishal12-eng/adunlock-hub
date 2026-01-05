@@ -283,17 +283,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="px-4 pb-6">
-        <div className="container mx-auto">
-          <CategoryTags 
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            contentCounts={contentCounts}
-          />
-        </div>
-      </section>
-
       {/* Featured Content Section */}
       {contents.length > 0 && (
         <FeaturedContent contents={contents} onContentClick={handleContentClick} />
