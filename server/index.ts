@@ -3,6 +3,7 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db.js";
 import { registerRoutes } from "./routes.js";
+import { registerAdminContentApi } from "./api/adminContent.js";
 import { storage } from "./storage.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -74,6 +75,11 @@ async function startServer() {
     console.log(`SESSION_SECRET configured: ${!!process.env.SESSION_SECRET}`);
     
     await storage.seedDefaultAdmin();
+    
+    // Register API routes for n8n automation (token-based auth)
+    registerAdminContentApi(app);
+    
+    // Register existing routes (session-based admin panel)
     registerRoutes(app);
 
     app.use((req, res, next) => {
