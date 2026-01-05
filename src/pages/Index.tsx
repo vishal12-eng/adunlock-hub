@@ -211,30 +211,30 @@ export default function Index() {
       
       <section className="pt-24 sm:pt-32 pb-8 sm:pb-16 px-3 sm:px-4">
         <div className="container mx-auto text-center space-y-4 sm:space-y-6">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full animate-fade-in">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full opacity-0 animate-fade-in hover-glow">
             <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
             <span className="text-xs sm:text-sm font-medium text-primary">Premium Content Awaits</span>
           </div>
           
-          <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold opacity-0 animate-fade-in stagger-2">
             <span className="text-foreground">Unlock </span>
             <span className="text-gradient-neon">Premium Content</span>
           </h1>
           
-          <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto animate-fade-in px-2" style={{ animationDelay: '0.2s' }}>
+          <p className="text-sm sm:text-lg text-muted-foreground max-w-2xl mx-auto opacity-0 animate-fade-in stagger-3 px-2">
             Watch a few ads to get instant access to exclusive downloads, files, and premium resources.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 pt-4 sm:pt-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-4 pt-4 sm:pt-6">
+            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full opacity-0 animate-fade-in stagger-4 hover-lift">
               <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
               <span className="text-xs sm:text-sm text-foreground">Fast Unlocks</span>
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full">
+            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full opacity-0 animate-fade-in stagger-5 hover-lift">
               <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
               <span className="text-xs sm:text-sm text-foreground">Secure Downloads</span>
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full">
+            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 glass rounded-full opacity-0 animate-fade-in stagger-6 hover-lift">
               <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
               <span className="text-xs sm:text-sm text-foreground">No Sign-up</span>
             </div>
@@ -301,19 +301,19 @@ export default function Index() {
                 </span>
               </div>
               
-              <div className="relative w-full sm:w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <div className="relative w-full sm:w-72 group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search content..."
-                  className="w-full pl-10 pr-10 py-2 sm:py-2.5 rounded-xl bg-input border border-border text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  className="w-full pl-10 pr-10 py-2 sm:py-2.5 rounded-xl bg-input border border-border text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all duration-300"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors touch-active"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -333,11 +333,15 @@ export default function Index() {
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="glass rounded-xl sm:rounded-2xl overflow-hidden animate-pulse">
-                  <div className="aspect-[4/3] bg-muted" />
+                <div 
+                  key={i} 
+                  className="glass rounded-xl sm:rounded-2xl overflow-hidden"
+                  style={{ animationDelay: `${i * 0.1}s` }}
+                >
+                  <div className="aspect-[4/3] skeleton-shimmer" />
                   <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
-                    <div className="h-4 sm:h-5 bg-muted rounded w-3/4" />
-                    <div className="h-3 sm:h-4 bg-muted rounded w-1/2" />
+                    <div className="h-4 sm:h-5 skeleton-shimmer rounded w-3/4" />
+                    <div className="h-3 sm:h-4 skeleton-shimmer rounded w-1/2" />
                   </div>
                 </div>
               ))}

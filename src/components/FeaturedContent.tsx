@@ -1,5 +1,6 @@
 import { Content } from '@/lib/api';
 import { TrendingUp, Eye, Unlock, ArrowRight, Lock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface FeaturedContentProps {
   contents: Content[];
@@ -17,8 +18,9 @@ export function FeaturedContent({ contents, onContentClick }: FeaturedContentPro
   return (
     <section className="px-3 sm:px-4 pb-8 sm:pb-12">
       <div className="container mx-auto">
-        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-accent/20 rounded-full">
+        {/* Header with animation */}
+        <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 opacity-0 animate-fade-in">
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-accent/20 rounded-full hover-glow transition-all duration-300">
             <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
             <span className="text-xs sm:text-sm font-semibold text-accent">Trending Now</span>
           </div>
@@ -30,12 +32,18 @@ export function FeaturedContent({ contents, onContentClick }: FeaturedContentPro
             <button
               key={content.id}
               onClick={() => onContentClick(content)}
-              className={`relative overflow-hidden rounded-xl sm:rounded-2xl text-left transition-all duration-500 group ${
-                index === 0 ? 'md:col-span-2 md:row-span-2' : ''
-              }`}
+              style={{ animationDelay: `${index * 0.1}s` }}
+              className={cn(
+                "relative overflow-hidden rounded-xl sm:rounded-2xl text-left transition-all duration-500 group touch-active hover-lift",
+                "opacity-0 animate-stagger-fade",
+                index === 0 && 'md:col-span-2 md:row-span-2'
+              )}
             >
               {/* Background image */}
-              <div className={`relative ${index === 0 ? 'aspect-video md:aspect-[16/10]' : 'aspect-video'}`}>
+              <div className={cn(
+                "relative",
+                index === 0 ? 'aspect-video md:aspect-[16/10]' : 'aspect-video'
+              )}>
                 {content.thumbnail_url ? (
                   <img
                     src={content.thumbnail_url}
@@ -44,24 +52,25 @@ export function FeaturedContent({ contents, onContentClick }: FeaturedContentPro
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-accent/30 to-primary/30 flex items-center justify-center">
-                    <Lock className="w-10 h-10 sm:w-16 sm:h-16 text-muted-foreground" />
+                    <Lock className="w-10 h-10 sm:w-16 sm:h-16 text-muted-foreground transition-transform duration-300 group-hover:scale-110" />
                   </div>
                 )}
 
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
 
-                {/* Rank badge */}
-                <div className="absolute top-2 sm:top-4 left-2 sm:left-4 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 glass rounded-full">
+                {/* Rank badge with bounce animation */}
+                <div className="absolute top-2 sm:top-4 left-2 sm:left-4 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 glass rounded-full animate-bounce-in">
                   <span className="text-sm sm:text-lg font-bold text-primary">#{index + 1}</span>
                   <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
                 </div>
 
                 {/* Content info */}
                 <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6">
-                  <h3 className={`font-bold text-foreground mb-1 sm:mb-2 group-hover:text-primary transition-colors line-clamp-2 ${
+                  <h3 className={cn(
+                    "font-bold text-foreground mb-1 sm:mb-2 group-hover:text-primary transition-colors duration-300 line-clamp-2",
                     index === 0 ? 'text-base sm:text-2xl md:text-3xl' : 'text-sm sm:text-lg'
-                  }`}>
+                  )}>
                     {content.title}
                   </h3>
 
@@ -82,14 +91,14 @@ export function FeaturedContent({ contents, onContentClick }: FeaturedContentPro
                     </div>
                     <div className="flex items-center gap-1 sm:gap-1.5 text-primary ml-auto">
                       <span className="text-[10px] sm:text-sm font-medium">{content.required_ads} ads</span>
-                      <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Hover border effect */}
-              <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 rounded-xl sm:rounded-2xl transition-colors duration-300" />
+              {/* Hover border effect with glow */}
+              <div className="absolute inset-0 border-2 border-transparent group-hover:border-primary/50 rounded-xl sm:rounded-2xl transition-all duration-300 group-hover:shadow-neon" />
             </button>
           ))}
         </div>

@@ -73,61 +73,64 @@ export default function Rewards() {
           </Link>
 
           {/* Balance Overview */}
-          <Card className="glass-intense border-primary/20 mb-8 overflow-hidden">
+          <Card className="glass-intense border-primary/20 mb-8 overflow-hidden animate-fade-in">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-            <CardContent className="relative p-6">
-              <h1 className="text-2xl font-bold text-foreground mb-6">Your Rewards Balance</h1>
+            <CardContent className="relative p-4 sm:p-6">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-4 sm:mb-6">Your Rewards Balance</h1>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="p-4 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/10 border border-yellow-500/30">
-                  <Coins className="w-8 h-8 text-yellow-400 mb-2" />
-                  <p className="text-3xl font-bold text-foreground">{coins}</p>
-                  <p className="text-sm text-muted-foreground">Coins</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                <div className="p-3 sm:p-4 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/10 border border-yellow-500/30 hover-lift">
+                  <Coins className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400 mb-1 sm:mb-2" />
+                  <p className="text-xl sm:text-3xl font-bold text-foreground">{coins}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Coins</p>
                 </div>
-                <div className="p-4 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/10 border border-green-500/30">
-                  <CreditCard className="w-8 h-8 text-green-400 mb-2" />
-                  <p className="text-3xl font-bold text-foreground">{bonusUnlocks}</p>
-                  <p className="text-sm text-muted-foreground">Unlock Cards</p>
+                <div className="p-3 sm:p-4 rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/10 border border-green-500/30 hover-lift">
+                  <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-green-400 mb-1 sm:mb-2" />
+                  <p className="text-xl sm:text-3xl font-bold text-foreground">{bonusUnlocks}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Unlock Cards</p>
                 </div>
-                <div className="p-4 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 border border-accent/30">
-                  <TrendingDown className="w-8 h-8 text-accent mb-2" />
-                  <p className="text-3xl font-bold text-foreground">{adsReduction}%</p>
-                  <p className="text-sm text-muted-foreground">Ads Reduction</p>
+                <div className="p-3 sm:p-4 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 border border-accent/30 hover-lift">
+                  <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 text-accent mb-1 sm:mb-2" />
+                  <p className="text-xl sm:text-3xl font-bold text-foreground">{adsReduction}%</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Ads Reduction</p>
                 </div>
-                <div className="p-4 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30">
-                  <Users className="w-8 h-8 text-primary mb-2" />
-                  <p className="text-3xl font-bold text-foreground">{totalReferrals}</p>
-                  <p className="text-sm text-muted-foreground">Referrals</p>
+                <div className="p-3 sm:p-4 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/30 hover-lift">
+                  <Users className="w-6 h-6 sm:w-8 sm:h-8 text-primary mb-1 sm:mb-2" />
+                  <p className="text-xl sm:text-3xl font-bold text-foreground">{totalReferrals}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Referrals</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Tab Navigation */}
-          <div className="flex gap-2 mb-6">
+          {/* Tab Navigation - Horizontal scrollable on mobile */}
+          <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
             <Button
               variant={activeTab === 'earn' ? 'default' : 'outline'}
               onClick={() => setActiveTab('earn')}
-              className="gap-2"
+              className="gap-1.5 sm:gap-2 text-xs sm:text-sm flex-shrink-0 touch-active"
+              size="sm"
             >
-              <Gift className="w-4 h-4" />
-              Earn Rewards
+              <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="whitespace-nowrap">Earn Rewards</span>
             </Button>
             <Button
               variant={activeTab === 'spend' ? 'default' : 'outline'}
               onClick={() => setActiveTab('spend')}
-              className="gap-2"
+              className="gap-1.5 sm:gap-2 text-xs sm:text-sm flex-shrink-0 touch-active"
+              size="sm"
             >
-              <Zap className="w-4 h-4" />
-              How to Spend
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="whitespace-nowrap">How to Spend</span>
             </Button>
             <Button
               variant={activeTab === 'guide' ? 'default' : 'outline'}
               onClick={() => setActiveTab('guide')}
-              className="gap-2"
+              className="gap-1.5 sm:gap-2 text-xs sm:text-sm flex-shrink-0 touch-active"
+              size="sm"
             >
-              <HelpCircle className="w-4 h-4" />
-              Full Guide
+              <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="whitespace-nowrap">Full Guide</span>
             </Button>
           </div>
 
