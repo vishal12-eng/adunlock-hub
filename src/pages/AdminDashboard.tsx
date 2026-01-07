@@ -18,7 +18,8 @@ import {
   ExternalLink,
   BarChart2,
   FlaskConical,
-  Users
+  Users,
+  ShoppingBag
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ContentFormModal } from '@/components/admin/ContentFormModal';
@@ -26,6 +27,7 @@ import { SettingsPanel } from '@/components/admin/SettingsPanel';
 import { AdminAnalytics } from '@/components/AdminAnalytics';
 import { ABTestingPanel } from '@/components/admin/ABTestingPanel';
 import { ReferralAdminPanel } from '@/components/admin/ReferralAdminPanel';
+import { ShopSettingsPanel } from '@/components/admin/ShopSettingsPanel';
 
 interface Stats {
   totalContents: number;
@@ -38,7 +40,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
   
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'contents' | 'abtesting' | 'referrals' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'contents' | 'abtesting' | 'referrals' | 'shop' | 'settings'>('dashboard');
   const [contents, setContents] = useState<Content[]>([]);
   const [stats, setStats] = useState<Stats>({
     totalContents: 0,
@@ -206,6 +208,18 @@ export default function AdminDashboard() {
           >
             <Users className="w-5 h-5" />
             Referrals
+          </button>
+          <button
+            onClick={() => setActiveTab('shop')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+              activeTab === 'shop' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
+            data-testid="nav-shop"
+          >
+            <ShoppingBag className="w-5 h-5" />
+            Shop & Rewards
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -505,6 +519,10 @@ export default function AdminDashboard() {
 
         {activeTab === 'referrals' && (
           <ReferralAdminPanel />
+        )}
+
+        {activeTab === 'shop' && (
+          <ShopSettingsPanel />
         )}
 
         {activeTab === 'settings' && (

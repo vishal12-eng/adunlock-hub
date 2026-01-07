@@ -7,6 +7,7 @@ import { InterstitialAd } from '@/components/InterstitialAd';
 import { SEOHead } from '@/components/SEOHead';
 import { RewardConfirmDialog } from '@/components/RewardConfirmDialog';
 import { RewardCelebration } from '@/components/RewardCelebration';
+import { AdsDiscountSlider } from '@/components/shop/AdsDiscountSlider';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateContentSchema, generateBreadcrumbSchema } from '@/hooks/useSEO';
 import { useABTest } from '@/hooks/useABTest';
@@ -27,7 +28,8 @@ import {
   CreditCard,
   Zap,
   Gift,
-  Sparkles
+  Sparkles,
+  TrendingDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -457,6 +459,24 @@ export default function UnlockPage() {
                     </p>
                   )}
                 </div>
+              )}
+
+              {/* Ads Discount Slider - Show before watching ads */}
+              {!isCompleted && !isWaitingForAd && session.ads_watched === 0 && session.ads_required > 1 && (
+                <AdsDiscountSlider
+                  contentId={content.id}
+                  contentTitle={content.title}
+                  originalAds={session.ads_required}
+                  onDiscountApplied={(newAdsCount, coinsSpent) => {
+                    setSession(prev => prev ? { 
+                      ...prev, 
+                      ads_required: newAdsCount 
+                    } : null);
+                    toast.success(`Reduced to ${newAdsCount} ads!`, {
+                      description: `Used ${coinsSpent} coins`,
+                    });
+                  }}
+                />
               )}
 
               <div className="space-y-2 sm:space-y-3">
