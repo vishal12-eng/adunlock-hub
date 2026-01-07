@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ShoppingBag, Gift } from 'lucide-react';
 import { UserBalance } from '@/components/UserBalance';
 
 export function Header() {
@@ -21,7 +22,35 @@ export function Header() {
           </div>
         </Link>
         
-        <UserBalance />
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Navigation Links */}
+          <nav className="hidden sm:flex items-center gap-1">
+            <Link
+              to="/shop"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              Shop
+            </Link>
+            <Link
+              to="/rewards"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+            >
+              <Gift className="w-4 h-4" />
+              Rewards
+            </Link>
+          </nav>
+          
+          {/* Mobile Shop Link */}
+          <Link
+            to="/shop"
+            className="sm:hidden flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+          >
+            <ShoppingBag className="w-5 h-5" />
+          </Link>
+          
+          <UserBalance />
+        </div>
       </div>
     </header>
   );
