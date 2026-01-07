@@ -19,7 +19,8 @@ import {
   BarChart2,
   FlaskConical,
   Users,
-  ShoppingBag
+  ShoppingBag,
+  Mail
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ContentFormModal } from '@/components/admin/ContentFormModal';
@@ -28,6 +29,8 @@ import { AdminAnalytics } from '@/components/AdminAnalytics';
 import { ABTestingPanel } from '@/components/admin/ABTestingPanel';
 import { ReferralAdminPanel } from '@/components/admin/ReferralAdminPanel';
 import { ShopSettingsPanel } from '@/components/admin/ShopSettingsPanel';
+import { EmailSubscribersPanel } from '@/components/admin/EmailSubscribersPanel';
+import { ShopAnalytics } from '@/components/admin/ShopAnalytics';
 
 interface Stats {
   totalContents: number;
@@ -40,7 +43,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
   
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'contents' | 'abtesting' | 'referrals' | 'shop' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'contents' | 'abtesting' | 'referrals' | 'shop' | 'subscribers' | 'settings'>('dashboard');
   const [contents, setContents] = useState<Content[]>([]);
   const [stats, setStats] = useState<Stats>({
     totalContents: 0,
@@ -220,6 +223,18 @@ export default function AdminDashboard() {
           >
             <ShoppingBag className="w-5 h-5" />
             Shop & Rewards
+          </button>
+          <button
+            onClick={() => setActiveTab('subscribers')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+              activeTab === 'subscribers' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
+            data-testid="nav-subscribers"
+          >
+            <Mail className="w-5 h-5" />
+            Subscribers
           </button>
           <button
             onClick={() => setActiveTab('settings')}
@@ -522,7 +537,14 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === 'shop' && (
-          <ShopSettingsPanel />
+          <div className="space-y-8">
+            <ShopAnalytics />
+            <ShopSettingsPanel />
+          </div>
+        )}
+
+        {activeTab === 'subscribers' && (
+          <EmailSubscribersPanel />
         )}
 
         {activeTab === 'settings' && (
