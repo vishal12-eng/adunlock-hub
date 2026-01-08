@@ -1,1 +1,4 @@
 project_id = "mhknnwrajamrsuhyceni"
+
+[functions.newsletter-webhook]
+verify_jwt = false
