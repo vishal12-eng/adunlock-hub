@@ -37,12 +37,21 @@ export function RewardCelebration({
       
       const timer = setTimeout(() => {
         setVisible(false);
-        onComplete?.();
       }, 2500);
       
       return () => clearTimeout(timer);
     }
-  }, [show, onComplete]);
+  }, [show]);
+
+  // Handle onComplete separately to avoid re-triggering animation
+  useEffect(() => {
+    if (!visible && onComplete) {
+      const completeTimer = setTimeout(() => {
+        onComplete();
+      }, 100);
+      return () => clearTimeout(completeTimer);
+    }
+  }, [visible]);
 
   if (!visible) return null;
 

@@ -39,6 +39,7 @@ export function DailyRewardsSection() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [claimedReward, setClaimedReward] = useState<{ coins: number; cards: number } | null>(null);
   const [timeDisplay, setTimeDisplay] = useState('');
+  const [isClaiming, setIsClaiming] = useState(false);
   
   // Update countdown every second
   useEffect(() => {
@@ -52,14 +53,28 @@ export function DailyRewardsSection() {
   }, [dailyRewardsStatus.timeUntilNext]);
   
   const handleClaim = () => {
+    if (isClaiming) return;
+    setIsClaiming(true);
+    
+    // Store the rewards BEFORE claiming (since after claim, nextReward will change)
+    const rewardToShow = {
+      coins: dailyRewardConfig.coinsAmount,
+      cards: dailyRewardConfig.unlockCardsAmount,
+    };
+    
     const result = claimDailyReward();
     if (result.success) {
-      setClaimedReward({
-        coins: dailyRewardsStatus.nextReward.coins,
-        cards: dailyRewardsStatus.nextReward.unlockCards,
-      });
+      setClaimedReward(rewardToShow);
       setShowCelebration(true);
     }
+    
+    // Reset claiming state
+    setTimeout(() => setIsClaiming(false), 500);
+  };
+  
+  const handleCelebrationComplete = () => {
+    setShowCelebration(false);
+    setClaimedReward(null);
   };
   
   if (!dailyRewardConfig.enabled) {
@@ -132,7 +147,8 @@ export function DailyRewardsSection() {
                   <Button
                     size="lg"
                     onClick={handleClaim}
-                    className="gap-2 px-8 py-6 text-lg animate-wiggle bg-gradient-to-r from-primary to-accent hover:opacity-90"
+                    disabled={isClaiming}
+                    className="gap-2 px-8 py-6 text-lg bg-gradient-to-r from-primary to-accent hover:opacity-90"
                   >
                     <Sparkles className="w-5 h-5" />
                     Claim Reward
@@ -258,7 +274,7 @@ export function DailyRewardsSection() {
           ? `+${claimedReward.coins} Coins, +${claimedReward.cards} Cards!`
           : 'Daily Reward Claimed!'
         }
-        onComplete={() => setShowCelebration(false)} 
+        onComplete={handleCelebrationComplete} 
       />
     </>
   );
