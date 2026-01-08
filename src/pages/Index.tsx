@@ -17,6 +17,7 @@ import { ReferralWidgetCompact } from '@/components/referral/ReferralWidgets';
 import { processIncomingReferral } from '@/lib/referral';
 import { DailyRewardsWidget } from '@/components/DailyRewards';
 import { EmailCollector, InlineEmailCollector } from '@/components/EmailCollector';
+import { FooterNewsletter } from '@/components/NewsletterSubscribe';
 import { PushNotificationPrompt } from '@/components/PushNotifications';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateFAQSchema } from '@/hooks/useSEO';
@@ -387,8 +388,9 @@ export default function Index() {
       </section>
 
       <footer className="border-t border-border py-8 px-4">
-        <div className="container mx-auto text-center">
-          <p className="text-sm text-muted-foreground">
+        <div className="container mx-auto">
+          <FooterNewsletter />
+          <p className="text-sm text-muted-foreground text-center mt-8">
             © 2024 ADNEXUS. Watch Ads. Unlock Content.
           </p>
         </div>

@@ -31,6 +31,7 @@ import { ReferralAdminPanel } from '@/components/admin/ReferralAdminPanel';
 import { ShopSettingsPanel } from '@/components/admin/ShopSettingsPanel';
 import { EmailSubscribersPanel } from '@/components/admin/EmailSubscribersPanel';
 import { ShopAnalytics } from '@/components/admin/ShopAnalytics';
+import { EmailNotificationsPanel } from '@/components/admin/EmailNotificationsPanel';
 
 interface Stats {
   totalContents: number;
@@ -544,7 +545,10 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === 'subscribers' && (
-          <EmailSubscribersPanel />
+          <div className="space-y-8">
+            <EmailNotificationsPanel />
+            <EmailSubscribersPanel />
+          </div>
         )}
 
         {activeTab === 'settings' && (
