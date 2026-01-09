@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Lock, Sparkles } from 'lucide-react';
+import { Lock, Sparkles, Download, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ContentCardProps {
@@ -14,17 +14,23 @@ interface ContentCardProps {
   index?: number;
 }
 
-function getMetaLabel(requiredAds: number, views: number, unlocks: number) {
-  const labels: string[] = [];
-  
-  if (requiredAds >= 3) labels.push('PRO');
-  else if (requiredAds >= 2) labels.push('Premium');
-  else labels.push('MOD');
-  
-  if (views >= 100 || unlocks >= 50) labels.push('🔥 Hot');
-  else if (views >= 50 || unlocks >= 20) labels.push('Trending');
-  
-  return labels.join(' • ');
+function getMetaLabel(requiredAds: number) {
+  if (requiredAds >= 3) return 'PRO';
+  if (requiredAds >= 2) return 'Premium';
+  return 'MOD';
+}
+
+function getRating(views: number, unlocks: number) {
+  // Generate a realistic rating based on engagement
+  const ratio = unlocks / Math.max(views, 1);
+  const baseRating = 3.5 + (ratio * 1.5);
+  return Math.min(5, Math.max(3.5, baseRating)).toFixed(1);
+}
+
+function formatDownloads(unlocks: number) {
+  if (unlocks >= 1000) return `${(unlocks / 1000).toFixed(1)}K`;
+  if (unlocks >= 100) return `${unlocks}+`;
+  return `${Math.max(10, unlocks)}+`;
 }
 
 export function ContentCard({
@@ -39,7 +45,9 @@ export function ContentCard({
   index = 0
 }: ContentCardProps) {
   const [isLoaded, setIsLoaded] = useState(false);
-  const metaLabel = getMetaLabel(requiredAds, views, unlocks);
+  const metaLabel = getMetaLabel(requiredAds);
+  const rating = getRating(views, unlocks);
+  const downloads = formatDownloads(unlocks);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 50);
@@ -73,7 +81,7 @@ export function ContentCard({
         isLoaded && "opacity-100"
       )}
     >
-      {/* App Icon - Square */}
+      {/* App Icon - Square with shimmer */}
       <div className="app-icon-wrapper">
         {thumbnailUrl ? (
           <img 
@@ -88,6 +96,9 @@ export function ContentCard({
           </div>
         )}
         
+        {/* Shimmer overlay on hover */}
+        <div className="app-icon-shimmer" />
+        
         {/* PRO Badge Overlay */}
         {requiredAds >= 3 && (
           <div className="app-pro-badge">
@@ -100,6 +111,19 @@ export function ContentCard({
       <div className="app-info">
         <h3 className="app-title">{title}</h3>
         <p className="app-meta">{metaLabel}</p>
+        
+        {/* Rating & Downloads Row */}
+        <div className="app-stats">
+          <div className="app-rating">
+            <span className="app-rating-value">{rating}</span>
+            <Star className="w-3 h-3 fill-current" />
+          </div>
+          <span className="app-stats-dot">•</span>
+          <div className="app-downloads">
+            <Download className="w-3 h-3" />
+            <span>{downloads}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
