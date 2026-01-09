@@ -132,7 +132,7 @@
     box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
   }
 
-  /* Card hover effects */
+  /* Card hover effects (legacy) */
   .content-card {
     @apply relative overflow-hidden glass transition-all duration-500 cursor-pointer;
   }
@@ -150,6 +150,117 @@
   .content-card:hover {
     @apply scale-[1.02] border-primary/40;
     box-shadow: 0 20px 60px hsl(0 0% 0% / 0.4), 0 0 30px hsl(var(--primary) / 0.2);
+  }
+
+  /* Google Play Store Style App Grid */
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  @media (min-width: 480px) {
+    .app-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .app-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .app-grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .app-grid {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  }
+
+  /* App Card - Google Play Style */
+  .app-card {
+    @apply bg-card rounded-xl p-2.5 cursor-pointer transition-all duration-200;
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .app-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px hsl(0 0% 0% / 0.35), 0 0 0 1px hsl(var(--primary) / 0.2);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+
+  .app-card:active {
+    transform: translateY(-1px) scale(0.98);
+  }
+
+  /* App Icon Wrapper */
+  .app-icon-wrapper {
+    @apply relative w-full;
+  }
+
+  /* App Icon - Square */
+  .app-icon {
+    @apply w-full rounded-xl;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    background: linear-gradient(145deg, hsl(var(--secondary)), hsl(var(--muted)));
+  }
+
+  .app-icon-placeholder {
+    @apply flex items-center justify-center;
+    background: linear-gradient(145deg, hsl(var(--secondary)), hsl(var(--muted)));
+  }
+
+  /* PRO Badge */
+  .app-pro-badge {
+    @apply absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full;
+    background: linear-gradient(135deg, hsl(var(--accent)), hsl(320 100% 55%));
+    box-shadow: 0 2px 8px hsl(var(--accent) / 0.5);
+  }
+
+  .app-pro-badge svg {
+    @apply text-white;
+  }
+
+  /* App Info */
+  .app-info {
+    @apply mt-2 px-0.5;
+  }
+
+  .app-title {
+    @apply text-sm font-semibold text-foreground leading-tight;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.5em;
+  }
+
+  .app-meta {
+    @apply text-xs text-muted-foreground mt-1 truncate;
+  }
+
+  /* Skeleton for App Cards */
+  .app-card-skeleton {
+    @apply bg-card rounded-xl p-2.5;
+    border: 1px solid hsl(var(--border) / 0.3);
+  }
+
+  .app-icon-skeleton {
+    @apply w-full rounded-xl;
+    aspect-ratio: 1 / 1;
+  }
+
+  .app-info-skeleton {
+    @apply mt-2 px-0.5;
   }
 
   /* Progress bar */

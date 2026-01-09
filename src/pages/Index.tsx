@@ -332,17 +332,17 @@ export default function Index() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
-              {[...Array(8)].map((_, i) => (
+            <div className="app-grid">
+              {[...Array(10)].map((_, i) => (
                 <div 
                   key={i} 
-                  className="glass rounded-xl sm:rounded-2xl overflow-hidden"
-                  style={{ animationDelay: `${i * 0.1}s` }}
+                  className="app-card-skeleton"
+                  style={{ animationDelay: `${i * 0.05}s` }}
                 >
-                  <div className="aspect-[4/3] skeleton-shimmer" />
-                  <div className="p-3 sm:p-4 space-y-2 sm:space-y-3">
-                    <div className="h-4 sm:h-5 skeleton-shimmer rounded w-3/4" />
-                    <div className="h-3 sm:h-4 skeleton-shimmer rounded w-1/2" />
+                  <div className="app-icon-skeleton skeleton-shimmer" />
+                  <div className="app-info-skeleton">
+                    <div className="h-3.5 skeleton-shimmer rounded w-full" />
+                    <div className="h-3 skeleton-shimmer rounded w-2/3 mt-1.5" />
                   </div>
                 </div>
               ))}
@@ -373,7 +373,7 @@ export default function Index() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+            <div className="app-grid">
               {renderContentWithAds()}
             </div>
           )}
