@@ -184,6 +184,7 @@ export default function Index() {
           requiredAds={content.required_ads}
           views={content.views}
           unlocks={content.unlocks}
+          createdAt={content.created_at}
           onClick={() => handleContentClick(content)}
         />
       );

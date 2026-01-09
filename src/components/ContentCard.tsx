@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Lock, Sparkles, Download, Star } from 'lucide-react';
+import { Lock, Sparkles, Download, Star, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ContentCardProps {
@@ -10,6 +10,7 @@ interface ContentCardProps {
   requiredAds: number;
   views: number;
   unlocks: number;
+  createdAt?: string;
   onClick: () => void;
   index?: number;
 }
@@ -21,7 +22,6 @@ function getMetaLabel(requiredAds: number) {
 }
 
 function getRating(views: number, unlocks: number) {
-  // Generate a realistic rating based on engagement
   const ratio = unlocks / Math.max(views, 1);
   const baseRating = 3.5 + (ratio * 1.5);
   return Math.min(5, Math.max(3.5, baseRating)).toFixed(1);
@@ -33,6 +33,13 @@ function formatDownloads(unlocks: number) {
   return `${Math.max(10, unlocks)}+`;
 }
 
+function isNew(createdAt?: string) {
+  if (!createdAt) return false;
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  return new Date(createdAt) > sevenDaysAgo;
+}
+
 export function ContentCard({
   id,
   title,
@@ -41,6 +48,7 @@ export function ContentCard({
   requiredAds,
   views,
   unlocks,
+  createdAt,
   onClick,
   index = 0
 }: ContentCardProps) {
@@ -48,6 +56,7 @@ export function ContentCard({
   const metaLabel = getMetaLabel(requiredAds);
   const rating = getRating(views, unlocks);
   const downloads = formatDownloads(unlocks);
+  const isNewApp = isNew(createdAt);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 50);
@@ -98,6 +107,14 @@ export function ContentCard({
         
         {/* Shimmer overlay on hover */}
         <div className="app-icon-shimmer" />
+        
+        {/* NEW Badge */}
+        {isNewApp && (
+          <div className="app-new-badge">
+            <Zap className="w-2 h-2" />
+            <span>NEW</span>
+          </div>
+        )}
         
         {/* PRO Badge Overlay */}
         {requiredAds >= 3 && (
