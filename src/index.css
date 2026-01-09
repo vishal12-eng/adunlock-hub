@@ -219,6 +219,23 @@
     background: linear-gradient(145deg, hsl(var(--secondary)), hsl(var(--muted)));
   }
 
+  /* App Icon Shimmer Effect */
+  .app-icon-shimmer {
+    @apply absolute inset-0 rounded-xl opacity-0 pointer-events-none transition-opacity duration-300;
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      hsl(var(--primary) / 0.15) 50%,
+      transparent 60%
+    );
+    background-size: 200% 100%;
+  }
+
+  .app-card:hover .app-icon-shimmer {
+    @apply opacity-100;
+    animation: icon-shimmer 0.8s ease-out;
+  }
+
   /* PRO Badge */
   .app-pro-badge {
     @apply absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full;
@@ -245,7 +262,28 @@
   }
 
   .app-meta {
-    @apply text-xs text-muted-foreground mt-1 truncate;
+    @apply text-xs text-muted-foreground mt-0.5;
+  }
+
+  /* App Stats Row */
+  .app-stats {
+    @apply flex items-center gap-1.5 mt-1 text-xs;
+  }
+
+  .app-rating {
+    @apply flex items-center gap-0.5 text-amber-400;
+  }
+
+  .app-rating-value {
+    @apply font-medium;
+  }
+
+  .app-stats-dot {
+    @apply text-muted-foreground/50;
+  }
+
+  .app-downloads {
+    @apply flex items-center gap-0.5 text-muted-foreground;
   }
 
   /* Skeleton for App Cards */
@@ -261,6 +299,105 @@
 
   .app-info-skeleton {
     @apply mt-2 px-0.5;
+  }
+
+  /* ========== Featured Apps Carousel ========== */
+  .featured-carousel {
+    @apply -mx-3 sm:-mx-4 px-3 sm:px-4 overflow-x-auto scrollbar-hide;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .featured-carousel-track {
+    @apply flex gap-3;
+    padding-right: 12px;
+  }
+
+  .featured-app-card {
+    @apply flex-shrink-0 bg-card rounded-xl p-2.5 cursor-pointer transition-all duration-200;
+    width: 130px;
+    border: 1px solid hsl(var(--border) / 0.5);
+    scroll-snap-align: start;
+  }
+
+  @media (min-width: 640px) {
+    .featured-app-card {
+      width: 150px;
+    }
+  }
+
+  .featured-app-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px hsl(0 0% 0% / 0.35), 0 0 0 1px hsl(var(--primary) / 0.2);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+
+  .featured-icon-wrapper {
+    @apply relative w-full;
+  }
+
+  .featured-app-icon {
+    @apply w-full rounded-xl;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    background: linear-gradient(145deg, hsl(var(--secondary)), hsl(var(--muted)));
+  }
+
+  .featured-icon-placeholder {
+    @apply flex items-center justify-center;
+  }
+
+  .featured-icon-shimmer {
+    @apply absolute inset-0 rounded-xl opacity-0 pointer-events-none transition-opacity duration-300;
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      hsl(var(--primary) / 0.15) 50%,
+      transparent 60%
+    );
+    background-size: 200% 100%;
+  }
+
+  .featured-app-card:hover .featured-icon-shimmer {
+    @apply opacity-100;
+    animation: icon-shimmer 0.8s ease-out;
+  }
+
+  .featured-pro-badge {
+    @apply absolute -top-1 -right-1 flex items-center justify-center w-6 h-6 rounded-full;
+    background: linear-gradient(135deg, hsl(var(--accent)), hsl(320 100% 55%));
+    box-shadow: 0 2px 8px hsl(var(--accent) / 0.5);
+  }
+
+  .featured-pro-badge svg {
+    @apply text-white;
+  }
+
+  .featured-rank-badge {
+    @apply absolute -top-1 -left-1 flex items-center justify-center px-1.5 py-0.5 rounded-md text-[10px] font-bold text-white;
+    box-shadow: 0 2px 6px hsl(0 0% 0% / 0.3);
+  }
+
+  .featured-app-info {
+    @apply mt-2;
+  }
+
+  .featured-app-title {
+    @apply text-xs sm:text-sm font-semibold text-foreground leading-tight;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.2em;
+  }
+
+  .featured-app-meta {
+    @apply text-[10px] sm:text-xs text-muted-foreground mt-0.5;
+  }
+
+  .featured-app-stats {
+    @apply flex items-center gap-1 mt-1 text-[10px] sm:text-xs text-muted-foreground;
   }
 
   /* Progress bar */
@@ -427,6 +564,15 @@
   100% {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes icon-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 

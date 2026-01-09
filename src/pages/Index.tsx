@@ -5,6 +5,7 @@ import { UnlockModal } from '@/components/UnlockModal';
 import { AdBanner } from '@/components/AdBanner';
 import { AdvertisementBanner } from '@/components/AdvertisementBanner';
 import { FeaturedContent } from '@/components/FeaturedContent';
+import { FeaturedAppsCarousel } from '@/components/FeaturedAppsCarousel';
 import { ExitIntentPopup } from '@/components/ExitIntentPopup';
 import { InterstitialAd } from '@/components/InterstitialAd';
 import { ContentFilters, SortOption } from '@/components/ContentFilters';
@@ -283,6 +284,11 @@ export default function Index() {
           />
         </div>
       </section>
+
+      {/* Trending Apps Carousel */}
+      {contents.length > 0 && (
+        <FeaturedAppsCarousel contents={contents} onContentClick={handleContentClick} />
+      )}
 
       {/* Featured Content Section */}
       {contents.length > 0 && (
