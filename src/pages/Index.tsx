@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Header } from '@/components/Header';
 import { ContentCard } from '@/components/ContentCard';
 import { UnlockModal } from '@/components/UnlockModal';
 import { AdBanner } from '@/components/AdBanner';
 import { AdvertisementBanner } from '@/components/AdvertisementBanner';
-import { FeaturedContent } from '@/components/FeaturedContent';
 import { FeaturedAppsCarousel } from '@/components/FeaturedAppsCarousel';
+import { RecentlyAddedSection } from '@/components/RecentlyAddedSection';
 import { ExitIntentPopup } from '@/components/ExitIntentPopup';
 import { InterstitialAd } from '@/components/InterstitialAd';
 import { ContentFilters, SortOption } from '@/components/ContentFilters';
@@ -36,6 +36,16 @@ export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showVideoAd, setShowVideoAd] = useState(false);
   const { showAd, closeAd, incrementPageView } = useInterstitialAd();
+  const contentGridRef = useRef<HTMLDivElement>(null);
+
+  // Handle category change with smooth scroll
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    // Smooth scroll to content grid
+    setTimeout(() => {
+      contentGridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
 
   // Check for referral code on page load
   useEffect(() => {
@@ -280,7 +290,7 @@ export default function Index() {
         <div className="container mx-auto">
           <CategoryTags 
             selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
+            onCategoryChange={handleCategoryChange}
             contentCounts={contentCounts}
           />
         </div>
@@ -291,12 +301,12 @@ export default function Index() {
         <FeaturedAppsCarousel contents={contents} onContentClick={handleContentClick} />
       )}
 
-      {/* Featured Content Section */}
+      {/* Recently Added Section */}
       {contents.length > 0 && (
-        <FeaturedContent contents={contents} onContentClick={handleContentClick} />
+        <RecentlyAddedSection contents={contents} onContentClick={handleContentClick} />
       )}
 
-      <section className="px-3 sm:px-4 pb-12 sm:pb-20">
+      <section ref={contentGridRef} className="px-3 sm:px-4 pb-12 sm:pb-20 scroll-mt-20">
         <div className="container mx-auto">
           <div className="flex flex-col gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
