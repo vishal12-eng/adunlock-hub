@@ -435,6 +435,87 @@
     @apply flex items-center gap-1 mt-1 text-[10px] sm:text-xs text-muted-foreground;
   }
 
+  /* Recently Added Section */
+  .recently-added-carousel {
+    @apply -mx-3 px-3 overflow-x-auto scrollbar-hide;
+  }
+
+  .recently-added-track {
+    @apply flex gap-3 pb-2;
+    width: max-content;
+  }
+
+  .recently-added-card {
+    @apply relative flex-shrink-0 p-2 rounded-xl cursor-pointer transition-all duration-200;
+    width: 130px;
+    background: hsl(var(--card) / 0.7);
+    border: 1px solid hsl(var(--border) / 0.3);
+  }
+
+  .recently-added-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px hsl(0 0% 0% / 0.3);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+
+  .recently-added-icon-wrapper {
+    @apply relative w-full aspect-square rounded-lg overflow-hidden;
+  }
+
+  .recently-added-icon {
+    @apply w-full h-full object-cover;
+  }
+
+  .recently-added-placeholder {
+    @apply w-full h-full flex items-center justify-center;
+    background: linear-gradient(145deg, hsl(var(--muted)), hsl(var(--card)));
+  }
+
+  .recently-added-shimmer {
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300 pointer-events-none;
+    background: linear-gradient(
+      135deg,
+      transparent 30%,
+      hsl(var(--primary) / 0.15) 50%,
+      transparent 70%
+    );
+    background-size: 200% 200%;
+    animation: icon-shimmer 2s ease-in-out infinite paused;
+  }
+
+  .recently-added-card:hover .recently-added-shimmer {
+    @apply opacity-100;
+    animation-play-state: running;
+  }
+
+  .recently-new-badge {
+    @apply absolute top-1 left-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[8px] font-bold text-white uppercase tracking-wide;
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(200 100% 50%));
+    box-shadow: 0 2px 6px hsl(var(--primary) / 0.5);
+    animation: badge-pulse 2s ease-in-out infinite;
+  }
+
+  .recently-added-info {
+    @apply mt-2;
+  }
+
+  .recently-added-title {
+    @apply text-[11px] sm:text-xs font-semibold text-foreground leading-tight;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.2em;
+  }
+
+  .recently-added-meta {
+    @apply text-[9px] sm:text-[10px] text-muted-foreground mt-0.5;
+  }
+
+  .recently-added-stats {
+    @apply flex items-center gap-1 mt-1 text-[9px] sm:text-[10px] text-muted-foreground;
+  }
+
   /* Progress bar */
   .progress-bar {
     @apply relative h-3 bg-muted rounded-full overflow-hidden;
