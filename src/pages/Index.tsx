@@ -23,8 +23,9 @@ import { PushNotificationPrompt } from '@/components/PushNotifications';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateFAQSchema } from '@/hooks/useSEO';
 import { useABTest } from '@/hooks/useABTest';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { api, Content } from '@/lib/api';
-import { Zap, TrendingUp, Shield, Search, X } from 'lucide-react';
+import { Zap, TrendingUp, Shield, Search, X, Loader2 } from 'lucide-react';
 
 export default function Index() {
   const [contents, setContents] = useState<Content[]>([]);
@@ -175,6 +176,18 @@ export default function Index() {
     return result;
   }, [contents, searchQuery, sortBy, filterByAds, selectedCategory]);
 
+  // Infinite scroll for content grid
+  const { 
+    displayedItems: paginatedContents, 
+    hasMore, 
+    isLoadingMore, 
+    loadMoreRef 
+  } = useInfiniteScroll(filteredAndSortedContents, {
+    initialPageSize: 12,
+    pageSize: 8,
+    threshold: 300
+  });
+
   function handleContentClick(content: Content) {
     incrementPageView();
     setSelectedContent(content);
@@ -183,7 +196,7 @@ export default function Index() {
   function renderContentWithAds() {
     const items: JSX.Element[] = [];
     
-    filteredAndSortedContents.forEach((content, index) => {
+    paginatedContents.forEach((content, index) => {
       items.push(
         <ContentCard
           key={content.id}
@@ -196,11 +209,12 @@ export default function Index() {
           unlocks={content.unlocks}
           createdAt={content.created_at}
           onClick={() => handleContentClick(content)}
+          index={index}
         />
       );
 
-      // Insert ad banner every 4 items
-      if ((index + 1) % 4 === 0 && index < filteredAndSortedContents.length - 1) {
+      // Insert ad banner every 8 items for better monetization
+      if ((index + 1) % 8 === 0 && index < paginatedContents.length - 1) {
         items.push(
           <div key={`ad-${index}`} className="col-span-full">
             <AdBanner className="h-32" />
@@ -390,9 +404,35 @@ export default function Index() {
               )}
             </div>
           ) : (
-            <div className="app-grid">
-              {renderContentWithAds()}
-            </div>
+            <>
+              <div className="app-grid">
+                {renderContentWithAds()}
+              </div>
+              
+              {/* Infinite Scroll Loader */}
+              {hasMore && (
+                <div 
+                  ref={loadMoreRef} 
+                  className="flex items-center justify-center py-8 mt-4"
+                >
+                  {isLoadingMore ? (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                      <span className="text-sm">Loading more apps...</span>
+                    </div>
+                  ) : (
+                    <div className="h-8" /> 
+                  )}
+                </div>
+              )}
+              
+              {/* End of List Indicator */}
+              {!hasMore && paginatedContents.length > 0 && (
+                <div className="text-center py-6 mt-4 text-muted-foreground text-sm">
+                  <p>You've seen all {filteredAndSortedContents.length} apps 🎉</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
