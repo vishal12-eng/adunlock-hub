@@ -20,7 +20,8 @@ import {
   FlaskConical,
   Users,
   ShoppingBag,
-  Mail
+  Mail,
+  Megaphone
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ContentFormModal } from '@/components/admin/ContentFormModal';
@@ -32,6 +33,7 @@ import { ShopSettingsPanel } from '@/components/admin/ShopSettingsPanel';
 import { EmailSubscribersPanel } from '@/components/admin/EmailSubscribersPanel';
 import { ShopAnalytics } from '@/components/admin/ShopAnalytics';
 import { EmailNotificationsPanel } from '@/components/admin/EmailNotificationsPanel';
+import { AdsManagementPanel } from '@/components/admin/AdsManagementPanel';
 
 interface Stats {
   totalContents: number;
@@ -44,7 +46,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
   
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'contents' | 'abtesting' | 'referrals' | 'shop' | 'subscribers' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'contents' | 'ads' | 'abtesting' | 'referrals' | 'shop' | 'subscribers' | 'settings'>('dashboard');
   const [contents, setContents] = useState<Content[]>([]);
   const [stats, setStats] = useState<Stats>({
     totalContents: 0,
@@ -188,6 +190,18 @@ export default function AdminDashboard() {
           >
             <FileBox className="w-5 h-5" />
             Content Manager
+          </button>
+          <button
+            onClick={() => setActiveTab('ads')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+              activeTab === 'ads' 
+                ? 'bg-primary text-primary-foreground' 
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
+            data-testid="nav-ads"
+          >
+            <Megaphone className="w-5 h-5" />
+            Ads Management
           </button>
           <button
             onClick={() => setActiveTab('abtesting')}
@@ -549,6 +563,10 @@ export default function AdminDashboard() {
             <EmailNotificationsPanel />
             <EmailSubscribersPanel />
           </div>
+        )}
+
+        {activeTab === 'ads' && (
+          <AdsManagementPanel />
         )}
 
         {activeTab === 'settings' && (

@@ -17,9 +17,9 @@ import { CategoryTags, detectCategory, CATEGORIES } from '@/components/CategoryT
 import { ReferralWidgetCompact } from '@/components/referral/ReferralWidgets';
 import { processIncomingReferral } from '@/lib/referral';
 import { DailyRewardsWidget } from '@/components/DailyRewards';
-import { EmailCollector, InlineEmailCollector } from '@/components/EmailCollector';
+import { EmailCollector } from '@/components/EmailCollector';
 import { FooterNewsletter } from '@/components/NewsletterSubscribe';
-import { PushNotificationPrompt } from '@/components/PushNotifications';
+import { SocialBar } from '@/components/ads/SocialBar';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateFAQSchema } from '@/hooks/useSEO';
 import { useABTest } from '@/hooks/useABTest';
@@ -233,7 +233,7 @@ export default function Index() {
       <InterstitialAd isOpen={showAd} onClose={closeAd} />
       <VideoAdModal isOpen={showVideoAd} onClose={() => setShowVideoAd(false)} />
       <EmailCollector trigger="auto" />
-      <PushNotificationPrompt />
+      <SocialBar />
       <Header />
       
       <section className="pt-24 sm:pt-32 pb-8 sm:pb-16 px-3 sm:px-4">
@@ -434,13 +434,6 @@ export default function Index() {
               )}
             </>
           )}
-        </div>
-      </section>
-
-      {/* Email Collection Section */}
-      <section className="px-4 pb-8">
-        <div className="container mx-auto max-w-md">
-          <InlineEmailCollector />
         </div>
       </section>
 
