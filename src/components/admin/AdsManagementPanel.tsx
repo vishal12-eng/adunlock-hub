@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { 
-  Plus, Trash2, Save, Loader2, ToggleLeft, ToggleRight, 
+  Plus, Trash2, Save, Loader2, 
   Monitor, Smartphone, GripVertical, Eye, EyeOff, 
-  Image, Code, ExternalLink, Megaphone, LayoutGrid, MessageSquare
+  Image, Code, Megaphone, LayoutGrid
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,17 +12,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { api } from '@/lib/api';
 import {
   NativeAd,
   NativeAdsConfig,
   BannerAd,
   BannerAdsConfig,
-  SocialBarConfig,
   DEFAULT_NATIVE_ADS_CONFIG,
   DEFAULT_BANNER_ADS_CONFIG,
-  DEFAULT_SOCIAL_BAR_CONFIG,
   AD_CONFIG_KEYS,
   generateAdId,
 } from '@/lib/ads/config';
@@ -35,7 +32,6 @@ export function AdsManagementPanel() {
   // Configs
   const [nativeAds, setNativeAds] = useState<NativeAdsConfig>(DEFAULT_NATIVE_ADS_CONFIG);
   const [bannerAds, setBannerAds] = useState<BannerAdsConfig>(DEFAULT_BANNER_ADS_CONFIG);
-  const [socialBar, setSocialBar] = useState<SocialBarConfig>(DEFAULT_SOCIAL_BAR_CONFIG);
 
   useEffect(() => {
     fetchConfigs();
@@ -51,9 +47,6 @@ export function AdsManagementPanel() {
       if (settings[AD_CONFIG_KEYS.BANNER_ADS]) {
         setBannerAds(JSON.parse(settings[AD_CONFIG_KEYS.BANNER_ADS]));
       }
-      if (settings[AD_CONFIG_KEYS.SOCIAL_BAR]) {
-        setSocialBar(JSON.parse(settings[AD_CONFIG_KEYS.SOCIAL_BAR]));
-      }
     } catch (error) {
       console.error('Failed to fetch ad configs:', error);
     }
@@ -66,7 +59,6 @@ export function AdsManagementPanel() {
       await api.admin.updateSettings({
         [AD_CONFIG_KEYS.NATIVE_ADS]: JSON.stringify(nativeAds),
         [AD_CONFIG_KEYS.BANNER_ADS]: JSON.stringify(bannerAds),
-        [AD_CONFIG_KEYS.SOCIAL_BAR]: JSON.stringify(socialBar),
       });
       toast.success('Ad settings saved successfully');
     } catch (error) {
@@ -155,7 +147,7 @@ export function AdsManagementPanel() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 w-full max-w-md">
+        <TabsList className="grid grid-cols-2 w-full max-w-sm">
           <TabsTrigger value="native" className="gap-2">
             <LayoutGrid className="w-4 h-4" />
             Native Ads
@@ -163,10 +155,6 @@ export function AdsManagementPanel() {
           <TabsTrigger value="banner" className="gap-2">
             <Megaphone className="w-4 h-4" />
             Banners
-          </TabsTrigger>
-          <TabsTrigger value="socialbar" className="gap-2">
-            <MessageSquare className="w-4 h-4" />
-            Social Bar
           </TabsTrigger>
         </TabsList>
 
@@ -496,157 +484,6 @@ export function AdsManagementPanel() {
           </div>
         </TabsContent>
 
-        {/* Social Bar Tab */}
-        <TabsContent value="socialbar" className="space-y-6">
-          <div className="glass rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center">
-                  <MessageSquare className="w-6 h-6 text-green-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Social Bar</h3>
-                  <p className="text-sm text-muted-foreground">Floating monetization bar</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Label htmlFor="socialbar-enabled" className="text-sm">Enabled</Label>
-                <Switch
-                  id="socialbar-enabled"
-                  checked={socialBar.enabled}
-                  onCheckedChange={(checked) => setSocialBar(prev => ({ ...prev, enabled: checked }))}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>CTA Text</Label>
-                  <Input
-                    value={socialBar.ctaText}
-                    onChange={(e) => setSocialBar(prev => ({ ...prev, ctaText: e.target.value }))}
-                    placeholder="🎁 Earn Free Rewards"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Link URL</Label>
-                  <Input
-                    value={socialBar.linkUrl}
-                    onChange={(e) => setSocialBar(prev => ({ ...prev, linkUrl: e.target.value }))}
-                    placeholder="https://your-smartlink.com"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Position</Label>
-                  <Select
-                    value={socialBar.position}
-                    onValueChange={(value: 'bottom' | 'side') => 
-                      setSocialBar(prev => ({ ...prev, position: value }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bottom">Bottom (Full Width)</SelectItem>
-                      <SelectItem value="side">Side (Floating)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Device</Label>
-                  <Select
-                    value={socialBar.device}
-                    onValueChange={(value: 'all' | 'desktop' | 'mobile') => 
-                      setSocialBar(prev => ({ ...prev, device: value }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Devices</SelectItem>
-                      <SelectItem value="desktop">Desktop Only</SelectItem>
-                      <SelectItem value="mobile">Mobile Only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Style</Label>
-                  <Select
-                    value={socialBar.style}
-                    onValueChange={(value: 'default' | 'minimal' | 'vibrant') => 
-                      setSocialBar(prev => ({ ...prev, style: value }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="default">Default (Primary)</SelectItem>
-                      <SelectItem value="minimal">Minimal (Subtle)</SelectItem>
-                      <SelectItem value="vibrant">Vibrant (Gradient)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Switch
-                    id="dismissible"
-                    checked={socialBar.dismissible}
-                    onCheckedChange={(checked) => setSocialBar(prev => ({ ...prev, dismissible: checked }))}
-                  />
-                  <Label htmlFor="dismissible">Allow users to dismiss</Label>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 space-y-2">
-              <Label>Show on Pages</Label>
-              <div className="flex flex-wrap gap-4 mt-2">
-                {(['home', 'unlock', 'shop', 'rewards'] as const).map(page => (
-                  <label key={page} className="flex items-center gap-2 cursor-pointer">
-                    <Checkbox
-                      checked={socialBar.pages.includes(page)}
-                      onCheckedChange={(checked) => {
-                        setSocialBar(prev => ({
-                          ...prev,
-                          pages: checked 
-                            ? [...prev.pages, page]
-                            : prev.pages.filter(p => p !== page)
-                        }));
-                      }}
-                    />
-                    <span className="text-sm capitalize">{page}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Preview */}
-            {socialBar.enabled && socialBar.linkUrl && (
-              <div className="mt-6 p-4 border border-dashed border-border rounded-xl">
-                <Label className="text-xs text-muted-foreground mb-2 block">Preview</Label>
-                <div className={`
-                  py-3 px-4 rounded-lg flex items-center justify-between
-                  ${socialBar.style === 'default' ? 'bg-gradient-to-r from-primary/90 to-accent/90 text-primary-foreground' : ''}
-                  ${socialBar.style === 'minimal' ? 'bg-background border border-border text-foreground' : ''}
-                  ${socialBar.style === 'vibrant' ? 'bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white' : ''}
-                `}>
-                  <span className="font-medium text-sm">{socialBar.ctaText}</span>
-                  {socialBar.dismissible && <span className="text-xs opacity-70">×</span>}
-                </div>
-              </div>
-            )}
-          </div>
-        </TabsContent>
       </Tabs>
     </div>
   );

@@ -19,7 +19,7 @@ import { processIncomingReferral } from '@/lib/referral';
 import { DailyRewardsWidget } from '@/components/DailyRewards';
 import { EmailCollector } from '@/components/EmailCollector';
 import { FooterNewsletter } from '@/components/NewsletterSubscribe';
-import { SocialBar } from '@/components/ads/SocialBar';
+
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateFAQSchema } from '@/hooks/useSEO';
 import { useABTest } from '@/hooks/useABTest';
@@ -233,7 +233,7 @@ export default function Index() {
       <InterstitialAd isOpen={showAd} onClose={closeAd} />
       <VideoAdModal isOpen={showVideoAd} onClose={() => setShowVideoAd(false)} />
       <EmailCollector trigger="auto" />
-      <SocialBar />
+      
       <Header />
       
       <section className="pt-24 sm:pt-32 pb-8 sm:pb-16 px-3 sm:px-4">
