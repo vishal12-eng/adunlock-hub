@@ -19,7 +19,8 @@ import { processIncomingReferral } from '@/lib/referral';
 import { DailyRewardsWidget } from '@/components/DailyRewards';
 import { EmailCollector } from '@/components/EmailCollector';
 import { FooterNewsletter } from '@/components/NewsletterSubscribe';
-
+import { NativeAdUnit } from '@/components/ads/NativeAdUnit';
+import { useAdsConfig } from '@/hooks/useAdsConfig';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateFAQSchema } from '@/hooks/useSEO';
 import { useABTest } from '@/hooks/useABTest';
@@ -37,6 +38,7 @@ export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showVideoAd, setShowVideoAd] = useState(false);
   const { showAd, closeAd, incrementPageView } = useInterstitialAd();
+  const { nativeAds } = useAdsConfig();
   const contentGridRef = useRef<HTMLDivElement>(null);
 
   // Handle category change with smooth scroll
@@ -195,6 +197,7 @@ export default function Index() {
 
   function renderContentWithAds() {
     const items: JSX.Element[] = [];
+    const adFrequency = nativeAds.enabled && nativeAds.frequency > 0 ? nativeAds.frequency : 8;
     
     paginatedContents.forEach((content, index) => {
       items.push(
@@ -213,13 +216,21 @@ export default function Index() {
         />
       );
 
-      // Insert ad banner every 8 items for better monetization
-      if ((index + 1) % 8 === 0 && index < paginatedContents.length - 1) {
-        items.push(
-          <div key={`ad-${index}`} className="col-span-full">
-            <AdBanner className="h-32" />
-          </div>
-        );
+      // Insert native ad based on admin-configured frequency
+      if ((index + 1) % adFrequency === 0 && index < paginatedContents.length - 1) {
+        if (nativeAds.enabled) {
+          items.push(
+            <div key={`native-ad-${index}`} className="col-span-full">
+              <NativeAdUnit className="my-2" />
+            </div>
+          );
+        } else {
+          items.push(
+            <div key={`ad-${index}`} className="col-span-full">
+              <AdBanner className="h-32" />
+            </div>
+          );
+        }
       }
     });
 

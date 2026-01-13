@@ -3,17 +3,14 @@ import { api } from '@/lib/api';
 import {
   NativeAdsConfig,
   BannerAdsConfig,
-  SocialBarConfig,
   DEFAULT_NATIVE_ADS_CONFIG,
   DEFAULT_BANNER_ADS_CONFIG,
-  DEFAULT_SOCIAL_BAR_CONFIG,
   AD_CONFIG_KEYS,
 } from '@/lib/ads/config';
 
 interface AdsConfigState {
   nativeAds: NativeAdsConfig;
   bannerAds: BannerAdsConfig;
-  socialBar: SocialBarConfig;
   loading: boolean;
 }
 
@@ -27,7 +24,6 @@ export function useAdsConfig() {
     cachedConfig || {
       nativeAds: DEFAULT_NATIVE_ADS_CONFIG,
       bannerAds: DEFAULT_BANNER_ADS_CONFIG,
-      socialBar: DEFAULT_SOCIAL_BAR_CONFIG,
       loading: true,
     }
   );
@@ -50,14 +46,9 @@ export function useAdsConfig() {
         ? JSON.parse(settings[AD_CONFIG_KEYS.BANNER_ADS])
         : DEFAULT_BANNER_ADS_CONFIG;
 
-      const socialBar: SocialBarConfig = settings[AD_CONFIG_KEYS.SOCIAL_BAR]
-        ? JSON.parse(settings[AD_CONFIG_KEYS.SOCIAL_BAR])
-        : DEFAULT_SOCIAL_BAR_CONFIG;
-
       const newConfig = {
         nativeAds,
         bannerAds,
-        socialBar,
         loading: false,
       };
 
@@ -116,26 +107,9 @@ export function useAdsConfigAdmin() {
     }
   };
 
-  const saveSocialBarConfig = async (config: SocialBarConfig) => {
-    setSaving(true);
-    try {
-      await api.admin.updateSettings({
-        [AD_CONFIG_KEYS.SOCIAL_BAR]: JSON.stringify(config),
-      });
-      cachedConfig = null;
-      return true;
-    } catch (error) {
-      console.error('Failed to save social bar config:', error);
-      return false;
-    } finally {
-      setSaving(false);
-    }
-  };
-
   return {
     saving,
     saveNativeAdsConfig,
     saveBannerAdsConfig,
-    saveSocialBarConfig,
   };
 }
