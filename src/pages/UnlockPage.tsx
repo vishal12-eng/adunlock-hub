@@ -8,6 +8,8 @@ import { SEOHead } from '@/components/SEOHead';
 import { RewardConfirmDialog } from '@/components/RewardConfirmDialog';
 import { RewardCelebration } from '@/components/RewardCelebration';
 import { AdsDiscountSlider } from '@/components/shop/AdsDiscountSlider';
+import { AdBanner } from '@/components/AdBanner';
+import { AdvertisementBanner } from '@/components/AdvertisementBanner';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateContentSchema, generateBreadcrumbSchema } from '@/hooks/useSEO';
 import { useABTest } from '@/hooks/useABTest';
@@ -298,6 +300,11 @@ export default function UnlockPage() {
       
       <main className="pt-20 sm:pt-28 pb-12 sm:pb-20 px-3 sm:px-4">
         <div className="container mx-auto max-w-2xl">
+          {/* Top Banner Ad */}
+          <div className="mb-4">
+            <AdBanner className="h-24 sm:h-28" />
+          </div>
+
           <button
             onClick={handleBackClick}
             className="flex items-center gap-2 text-sm sm:text-base text-muted-foreground hover:text-foreground transition-colors mb-4 sm:mb-8"
@@ -564,6 +571,11 @@ export default function UnlockPage() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Bottom Banner Ad */}
+          <div className="mt-6">
+            <AdvertisementBanner className="h-24 sm:h-32" />
           </div>
 
           {/* Related Content */}
