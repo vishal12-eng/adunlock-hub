@@ -10,11 +10,13 @@ import { RewardCelebration } from '@/components/RewardCelebration';
 import { AdsDiscountSlider } from '@/components/shop/AdsDiscountSlider';
 import { AdBanner } from '@/components/AdBanner';
 import { AdvertisementBanner } from '@/components/AdvertisementBanner';
+import { InteractiveRating } from '@/components/RatingStars';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateContentSchema, generateBreadcrumbSchema } from '@/hooks/useSEO';
 import { useABTest } from '@/hooks/useABTest';
 import { useReferral } from '@/hooks/useReferral';
 import { useRewardSpending } from '@/hooks/useRewardSpending';
+import { useRatings, getDisplayRating } from '@/hooks/useRatings';
 import { api, Content, UserSession, ApiError } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
 import { 
@@ -31,7 +33,8 @@ import {
   Zap,
   Gift,
   Sparkles,
-  TrendingDown
+  TrendingDown,
+  Star
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -80,6 +83,9 @@ export default function UnlockPage() {
     cancelAction,
     dismissCelebration,
   } = useRewardSpending();
+
+  // Ratings system
+  const { userRating, rateContent, hasRated } = useRatings(contentId);
 
   // A/B Testing
   const ctaTest = useABTest('CTA_BUTTON_COLOR');
@@ -353,8 +359,38 @@ export default function UnlockPage() {
                   {content.description && (
                     <p className="text-sm sm:text-base text-muted-foreground line-clamp-2 sm:line-clamp-none">{content.description}</p>
                   )}
+                  
+                  {/* Rating and Downloads Stats */}
+                  <div className="flex items-center gap-4 mt-2">
+                    <div className="flex items-center gap-1 text-amber-400">
+                      <Star className="w-4 h-4 fill-current" />
+                      <span className="font-semibold">{getDisplayRating(content.id, content.views, content.unlocks).rating}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <Download className="w-4 h-4" />
+                      <span className="text-sm">{content.unlocks.toLocaleString()} downloads</span>
+                    </div>
+                  </div>
                 </div>
                 <SocialShare title={content.title} contentId={content.id} />
+              </div>
+
+              {/* Rating Section - Allow users to rate */}
+              <div className="glass rounded-lg p-3 sm:p-4">
+                <InteractiveRating
+                  contentId={content.id}
+                  currentRating={userRating}
+                  onRate={(id, rating) => {
+                    rateContent(id, rating);
+                    toast.success(`Rated ${rating} stars!`);
+                  }}
+                  size="md"
+                />
+                {hasRated(content.id) && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Thanks for rating! Your rating helps others discover great apps.
+                  </p>
+                )}
               </div>
 
               <div className="space-y-3 sm:space-y-4">

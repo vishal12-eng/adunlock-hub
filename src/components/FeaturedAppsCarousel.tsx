@@ -3,6 +3,7 @@ import { Lock, Sparkles, Star, Download, ChevronRight, Flame, Zap } from 'lucide
 import { Content } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { detectCategory, CATEGORIES } from '@/components/CategoryTags';
+import { getDisplayRating } from '@/hooks/useRatings';
 
 interface FeaturedAppsCarouselProps {
   contents: Content[];
@@ -17,16 +18,10 @@ const QUICK_FILTERS = [
   { id: 'media', label: 'Media', icon: null },
 ];
 
-function getRating(views: number, unlocks: number) {
-  const ratio = unlocks / Math.max(views, 1);
-  const baseRating = 3.5 + (ratio * 1.5);
-  return Math.min(5, Math.max(3.5, baseRating)).toFixed(1);
-}
-
 function formatDownloads(unlocks: number) {
+  if (unlocks >= 1000000) return `${(unlocks / 1000000).toFixed(1)}M`;
   if (unlocks >= 1000) return `${(unlocks / 1000).toFixed(1)}K`;
-  if (unlocks >= 100) return `${unlocks}+`;
-  return `${Math.max(10, unlocks)}+`;
+  return unlocks.toString();
 }
 
 function isNew(createdAt: string) {
@@ -171,7 +166,7 @@ export function FeaturedAppsCarousel({ contents, onContentClick }: FeaturedAppsC
                     <div className="featured-app-stats">
                       <div className="flex items-center gap-0.5 text-amber-400">
                         <Star className="w-3 h-3 fill-current" />
-                        <span>{getRating(content.views, content.unlocks)}</span>
+                        <span>{getDisplayRating(content.id, content.views, content.unlocks).rating}</span>
                       </div>
                       <span className="text-muted-foreground">•</span>
                       <div className="flex items-center gap-0.5">
