@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Lock, Sparkles, Download, Star, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getDisplayRating } from '@/hooks/useRatings';
 
 interface ContentCardProps {
   id: string;
@@ -21,16 +22,10 @@ function getMetaLabel(requiredAds: number) {
   return 'MOD';
 }
 
-function getRating(views: number, unlocks: number) {
-  const ratio = unlocks / Math.max(views, 1);
-  const baseRating = 3.5 + (ratio * 1.5);
-  return Math.min(5, Math.max(3.5, baseRating)).toFixed(1);
-}
-
 function formatDownloads(unlocks: number) {
+  if (unlocks >= 1000000) return `${(unlocks / 1000000).toFixed(1)}M`;
   if (unlocks >= 1000) return `${(unlocks / 1000).toFixed(1)}K`;
-  if (unlocks >= 100) return `${unlocks}+`;
-  return `${Math.max(10, unlocks)}+`;
+  return unlocks.toString();
 }
 
 function isNew(createdAt?: string) {
@@ -54,7 +49,7 @@ export function ContentCard({
 }: ContentCardProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const metaLabel = getMetaLabel(requiredAds);
-  const rating = getRating(views, unlocks);
+  const { rating, hasUserRating } = getDisplayRating(id, views, unlocks);
   const downloads = formatDownloads(unlocks);
   const isNewApp = isNew(createdAt);
 
@@ -131,9 +126,9 @@ export function ContentCard({
         
         {/* Rating & Downloads Row */}
         <div className="app-stats">
-          <div className="app-rating">
+          <div className={cn("app-rating", hasUserRating && "text-yellow-400")}>
             <span className="app-rating-value">{rating}</span>
-            <Star className="w-3 h-3 fill-current" />
+            <Star className={cn("w-3 h-3", hasUserRating ? "fill-yellow-400 text-yellow-400" : "fill-current")} />
           </div>
           <span className="app-stats-dot">•</span>
           <div className="app-downloads">

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Content } from '@/lib/api';
 import { Clock, Lock, Download, Star, Zap, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getDisplayRating } from '@/hooks/useRatings';
 
 interface RecentlyAddedSectionProps {
   contents: Content[];
@@ -9,15 +10,9 @@ interface RecentlyAddedSectionProps {
 }
 
 function formatDownloads(unlocks: number) {
+  if (unlocks >= 1000000) return `${(unlocks / 1000000).toFixed(1)}M`;
   if (unlocks >= 1000) return `${(unlocks / 1000).toFixed(1)}K`;
-  if (unlocks >= 100) return `${unlocks}+`;
-  return `${Math.max(10, unlocks)}+`;
-}
-
-function getRating(views: number, unlocks: number) {
-  const ratio = unlocks / Math.max(views, 1);
-  const baseRating = 3.5 + (ratio * 1.5);
-  return Math.min(5, Math.max(3.5, baseRating)).toFixed(1);
+  return unlocks.toString();
 }
 
 export function RecentlyAddedSection({ contents, onContentClick }: RecentlyAddedSectionProps) {
@@ -102,7 +97,7 @@ export function RecentlyAddedSection({ contents, onContentClick }: RecentlyAdded
                   <div className="recently-added-stats">
                     <div className="flex items-center gap-0.5 text-amber-400">
                       <Star className="w-3 h-3 fill-current" />
-                      <span>{getRating(content.views, content.unlocks)}</span>
+                      <span>{getDisplayRating(content.id, content.views, content.unlocks).rating}</span>
                     </div>
                     <span className="text-muted-foreground">•</span>
                     <div className="flex items-center gap-0.5">
