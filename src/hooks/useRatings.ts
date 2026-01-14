@@ -76,17 +76,20 @@ export function useRatings(contentId?: string) {
   };
 }
 
-// Generate a display rating that combines user rating with a realistic base
-export function getDisplayRating(contentId: string, views: number, unlocks: number): { rating: string; hasUserRating: boolean } {
+// Calculate aggregate rating from all users who rated this content
+// This simulates what would happen with a real database by using localStorage
+// and combining with a realistic base rating
+export function getAggregateRating(contentId: string, views: number, unlocks: number): { 
+  rating: string; 
+  hasUserRating: boolean;
+  totalRatings: number;
+  userRating: number | null;
+} {
   const ratings = loadRatings();
-  const userRating = ratings[contentId]?.rating;
+  const userRatingData = ratings[contentId];
+  const userRating = userRatingData?.rating || null;
   
-  if (userRating) {
-    return { rating: userRating.toFixed(1), hasUserRating: true };
-  }
-  
-  // Generate a consistent pseudo-random rating based on content ID
-  // This ensures the same content always shows the same rating
+  // Generate a consistent pseudo-random base rating and count based on content ID
   let hash = 0;
   for (let i = 0; i < contentId.length; i++) {
     const char = contentId.charCodeAt(i);
@@ -97,10 +100,47 @@ export function getDisplayRating(contentId: string, views: number, unlocks: numb
   // Base rating between 3.8 and 4.9 based on hash
   const baseRating = 3.8 + (Math.abs(hash % 11) / 10);
   
-  // Slight adjustment based on popularity
+  // Simulated number of ratings based on unlocks (more unlocks = more ratings)
+  const simulatedRatingCount = Math.min(Math.floor(unlocks * 0.3) + Math.abs(hash % 50), 9999);
+  
+  // Popularity bonus based on unlock rate
   const popularityBonus = Math.min(0.3, (unlocks / Math.max(views, 1)) * 0.5);
   
-  const finalRating = Math.min(5, baseRating + popularityBonus);
+  // Calculate aggregate: if user has rated, blend their rating into the "average"
+  let finalRating: number;
+  let totalRatings: number;
   
-  return { rating: finalRating.toFixed(1), hasUserRating: false };
+  if (userRating) {
+    // Blend user rating with simulated average (weighted by count)
+    const totalWeight = simulatedRatingCount + 1;
+    const simulatedSum = baseRating * simulatedRatingCount;
+    finalRating = (simulatedSum + userRating) / totalWeight;
+    totalRatings = simulatedRatingCount + 1;
+  } else {
+    finalRating = baseRating + popularityBonus;
+    totalRatings = simulatedRatingCount;
+  }
+  
+  finalRating = Math.min(5, Math.max(1, finalRating));
+  
+  return { 
+    rating: finalRating.toFixed(1), 
+    hasUserRating: !!userRating,
+    totalRatings,
+    userRating
+  };
+}
+
+// Legacy function for backward compatibility
+export function getDisplayRating(contentId: string, views: number, unlocks: number): { rating: string; hasUserRating: boolean } {
+  const { rating, hasUserRating } = getAggregateRating(contentId, views, unlocks);
+  return { rating, hasUserRating };
+}
+
+// Format rating count for display (e.g., 1.2K, 500)
+export function formatRatingCount(count: number): string {
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}K`;
+  }
+  return count.toString();
 }
