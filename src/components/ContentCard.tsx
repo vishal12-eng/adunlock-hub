@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Lock, Sparkles, Download, Star, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getDisplayRating } from '@/hooks/useRatings';
+import { getAggregateRating, formatRatingCount } from '@/hooks/useRatings';
 
 interface ContentCardProps {
   id: string;
@@ -49,9 +49,10 @@ export function ContentCard({
 }: ContentCardProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const metaLabel = getMetaLabel(requiredAds);
-  const { rating, hasUserRating } = getDisplayRating(id, views, unlocks);
+  const { rating, hasUserRating, totalRatings } = getAggregateRating(id, views, unlocks);
   const downloads = formatDownloads(unlocks);
   const isNewApp = isNew(createdAt);
+  const ratingCountDisplay = formatRatingCount(totalRatings);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 50);
@@ -129,6 +130,7 @@ export function ContentCard({
           <div className={cn("app-rating", hasUserRating && "text-yellow-400")}>
             <span className="app-rating-value">{rating}</span>
             <Star className={cn("w-3 h-3", hasUserRating ? "fill-yellow-400 text-yellow-400" : "fill-current")} />
+            <span className="app-rating-count">({ratingCountDisplay})</span>
           </div>
           <span className="app-stats-dot">•</span>
           <div className="app-downloads">

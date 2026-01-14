@@ -20,6 +20,8 @@ import { DailyRewardsWidget } from '@/components/DailyRewards';
 import { EmailCollector } from '@/components/EmailCollector';
 import { FooterNewsletter } from '@/components/NewsletterSubscribe';
 import { NativeAdUnit } from '@/components/ads/NativeAdUnit';
+import { StickyBottomAd } from '@/components/ads/StickyBottomAd';
+import { FloatingAdButton } from '@/components/ads/FloatingAdButton';
 import { useAdsConfig } from '@/hooks/useAdsConfig';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateFAQSchema } from '@/hooks/useSEO';
@@ -246,6 +248,12 @@ export default function Index() {
       <EmailCollector trigger="auto" />
       
       <Header />
+      
+      {/* Floating Ad Button - appears on scroll */}
+      <FloatingAdButton position="right" showAfterScroll={500} />
+      
+      {/* Sticky Bottom Ad */}
+      <StickyBottomAd autoHideAfter={30} />
       
       <section className="pt-24 sm:pt-32 pb-8 sm:pb-16 px-3 sm:px-4">
         <div className="container mx-auto text-center space-y-4 sm:space-y-6">
