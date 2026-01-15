@@ -70,9 +70,9 @@ export function FloatingAdButton({
   return (
     <div
       className={cn(
-        "fixed z-40 transition-all duration-300",
-        position === 'right' ? 'right-4' : 'left-4',
-        "bottom-20 sm:bottom-24",
+        "fixed z-30 transition-all duration-300",
+        position === 'right' ? 'right-3 sm:right-4' : 'left-3 sm:left-4',
+        "bottom-[70px] sm:bottom-24",
         isExpanded ? "scale-100" : "scale-95 hover:scale-100",
         className
       )}
@@ -82,16 +82,16 @@ export function FloatingAdButton({
         className={cn(
           "relative cursor-pointer group",
           "bg-gradient-to-br from-primary via-primary to-primary/80",
-          "rounded-2xl shadow-lg shadow-primary/25",
+          "rounded-xl sm:rounded-2xl shadow-lg shadow-primary/25",
           "transition-all duration-300 transform",
-          isExpanded ? "p-4 min-w-[200px]" : "p-3"
+          isExpanded ? "p-3 sm:p-4 min-w-[160px] sm:min-w-[200px] max-w-[200px] sm:max-w-none" : "p-2.5 sm:p-3"
         )}
       >
         {/* Close button */}
         <button
           onClick={handleDismiss}
           className={cn(
-            "absolute -top-2 -right-2 w-6 h-6 rounded-full",
+            "absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-5 h-5 sm:w-6 sm:h-6 rounded-full",
             "bg-background border border-border",
             "flex items-center justify-center",
             "text-muted-foreground hover:text-foreground",
@@ -99,29 +99,29 @@ export function FloatingAdButton({
             isExpanded ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}
         >
-          <X className="w-3 h-3" />
+          <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
         </button>
 
         {isExpanded ? (
-          <div className="text-primary-foreground space-y-2">
-            <div className="flex items-center gap-2">
-              <Gift className="w-5 h-5 animate-bounce" />
-              <span className="font-bold text-sm">Special Offer!</span>
+          <div className="text-primary-foreground space-y-1.5 sm:space-y-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Gift className="w-4 h-4 sm:w-5 sm:h-5 animate-bounce flex-shrink-0" />
+              <span className="font-bold text-xs sm:text-sm">Special Offer!</span>
             </div>
-            <p className="text-xs opacity-90">
+            <p className="text-[10px] sm:text-xs opacity-90 leading-tight">
               Click to claim your exclusive reward
             </p>
-            <div className="flex items-center gap-1 text-xs font-medium">
-              <ExternalLink className="w-3 h-3" />
+            <div className="flex items-center gap-1 text-[10px] sm:text-xs font-medium">
+              <ExternalLink className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               <span>View Offer</span>
             </div>
           </div>
         ) : (
           <div className="relative">
-            <Gift className="w-6 h-6 text-primary-foreground animate-pulse" />
+            <Gift className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground animate-pulse" />
             {/* Notification dot */}
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full animate-ping" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full" />
+            <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-destructive rounded-full animate-ping" />
+            <div className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-destructive rounded-full" />
           </div>
         )}
       </div>

@@ -79,29 +79,30 @@ export function StickyBottomAd({
   return (
     <div 
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 safe-area-inset-bottom",
+        "fixed bottom-0 left-0 right-0 z-40",
         "bg-background/95 backdrop-blur-md border-t border-border/50",
         "animate-slide-up",
+        "pb-safe",
         className
       )}
     >
-      <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-2">
-        <div className="text-[10px] text-muted-foreground/60 absolute left-3 top-1">
+      <div className="relative px-2 py-1.5 sm:py-2 flex items-center justify-center">
+        <div className="text-[8px] sm:text-[10px] text-muted-foreground/60 absolute left-2 top-0.5">
           Ad
         </div>
         
         <div 
           ref={containerRef} 
-          className="flex items-center justify-center min-h-[60px]"
+          className="flex items-center justify-center min-h-[50px] sm:min-h-[60px] max-w-full overflow-hidden scale-[0.85] sm:scale-100 origin-center"
         />
         
         {showCloseButton && (
           <button
             onClick={handleDismiss}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 p-1 sm:p-1.5 rounded-full bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors z-10"
             aria-label="Close ad"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         )}
       </div>

@@ -240,7 +240,7 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen main-content-with-sticky-ad">
       <SEOHead jsonLd={faqSchema} />
       <ExitIntentPopup />
       <InterstitialAd isOpen={showAd} onClose={closeAd} />
@@ -249,11 +249,11 @@ export default function Index() {
       
       <Header />
       
-      {/* Floating Ad Button - appears on scroll */}
+      {/* Floating Ad Button - appears on scroll - positioned above sticky ad */}
       <FloatingAdButton position="right" showAfterScroll={500} />
       
-      {/* Sticky Bottom Ad */}
-      <StickyBottomAd autoHideAfter={30} />
+      {/* Sticky Bottom Ad - lower z-index to not overlap content */}
+      <StickyBottomAd autoHideAfter={60} />
       
       <section className="pt-24 sm:pt-32 pb-8 sm:pb-16 px-3 sm:px-4">
         <div className="container mx-auto text-center space-y-4 sm:space-y-6">
