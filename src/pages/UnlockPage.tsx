@@ -8,8 +8,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { RewardConfirmDialog } from '@/components/RewardConfirmDialog';
 import { RewardCelebration } from '@/components/RewardCelebration';
 import { AdsDiscountSlider } from '@/components/shop/AdsDiscountSlider';
-import { AdBanner } from '@/components/AdBanner';
-import { AdvertisementBanner } from '@/components/AdvertisementBanner';
+import { MinimizableNativeAd } from '@/components/ads/MinimizableNativeAd';
 import { InteractiveRating } from '@/components/RatingStars';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateContentSchema, generateBreadcrumbSchema } from '@/hooks/useSEO';
@@ -306,9 +305,9 @@ export default function UnlockPage() {
       
       <main className="pt-20 sm:pt-28 pb-12 sm:pb-20 px-3 sm:px-4">
         <div className="container mx-auto max-w-2xl">
-          {/* Top Banner Ad */}
+          {/* Top Minimizable Native Ad */}
           <div className="mb-4">
-            <AdBanner className="h-24 sm:h-28" />
+            <MinimizableNativeAd position="top" className="rounded-lg overflow-hidden" />
           </div>
 
           <button
@@ -609,9 +608,9 @@ export default function UnlockPage() {
             </div>
           </div>
 
-          {/* Bottom Banner Ad */}
+          {/* Bottom Native Ad */}
           <div className="mt-6">
-            <AdvertisementBanner className="h-24 sm:h-32" />
+            <MinimizableNativeAd position="inline" className="rounded-lg overflow-hidden" />
           </div>
 
           {/* Related Content */}

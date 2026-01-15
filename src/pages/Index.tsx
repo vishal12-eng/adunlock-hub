@@ -24,6 +24,7 @@ import { StickyBottomAd } from '@/components/ads/StickyBottomAd';
 import { FloatingAdButton } from '@/components/ads/FloatingAdButton';
 import { InArticleAd, PromoStrip } from '@/components/ads/InArticleAd';
 import { ContentDividerAd } from '@/components/ads/ContentDividerAd';
+import { MinimizableNativeAd } from '@/components/ads/MinimizableNativeAd';
 import { useAdsConfig } from '@/hooks/useAdsConfig';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateFAQSchema } from '@/hooks/useSEO';
@@ -303,15 +304,10 @@ export default function Index() {
         </div>
       </section>
 
-      <section className="px-3 sm:px-4 pb-6 sm:pb-8">
-        <div className="container mx-auto">
-          <AdBanner className="max-w-4xl mx-auto h-20 sm:h-28" />
-        </div>
-      </section>
-
+      {/* Minimizable Native Ad - Top Section */}
       <section className="px-3 sm:px-4 pb-4 sm:pb-6">
-        <div className="container mx-auto">
-          <AdvertisementBanner className="max-w-4xl mx-auto h-24 sm:h-32 md:h-40" />
+        <div className="container mx-auto max-w-4xl">
+          <MinimizableNativeAd position="top" className="rounded-lg overflow-hidden" />
         </div>
       </section>
 
