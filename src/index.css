@@ -4,6 +4,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Safe area padding for mobile devices */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+/* Ensure main content doesn't get hidden behind sticky ads */
+.main-content-with-sticky-ad {
+  padding-bottom: 70px;
+}
+
+@media (min-width: 640px) {
+  .main-content-with-sticky-ad {
+    padding-bottom: 80px;
+  }
+}
+
 @layer base {
   :root {
     --background: 220 20% 4%;
