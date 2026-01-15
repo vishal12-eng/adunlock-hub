@@ -22,6 +22,8 @@ import { FooterNewsletter } from '@/components/NewsletterSubscribe';
 import { NativeAdUnit } from '@/components/ads/NativeAdUnit';
 import { StickyBottomAd } from '@/components/ads/StickyBottomAd';
 import { FloatingAdButton } from '@/components/ads/FloatingAdButton';
+import { InArticleAd, PromoStrip } from '@/components/ads/InArticleAd';
+import { ContentDividerAd } from '@/components/ads/ContentDividerAd';
 import { useAdsConfig } from '@/hooks/useAdsConfig';
 import { useInterstitialAd } from '@/hooks/useInterstitialAd';
 import { useSEO, generateFAQSchema } from '@/hooks/useSEO';
@@ -200,6 +202,8 @@ export default function Index() {
   function renderContentWithAds() {
     const items: JSX.Element[] = [];
     const adFrequency = nativeAds.enabled && nativeAds.frequency > 0 ? nativeAds.frequency : 8;
+    const inArticleStyles: Array<'card' | 'banner' | 'featured' | 'recommendation'> = ['card', 'banner', 'featured', 'recommendation'];
+    let styleIndex = 0;
     
     paginatedContents.forEach((content, index) => {
       items.push(
@@ -220,6 +224,9 @@ export default function Index() {
 
       // Insert native ad based on admin-configured frequency
       if ((index + 1) % adFrequency === 0 && index < paginatedContents.length - 1) {
+        const currentStyle = inArticleStyles[styleIndex % inArticleStyles.length];
+        styleIndex++;
+        
         if (nativeAds.enabled) {
           items.push(
             <div key={`native-ad-${index}`} className="col-span-full">
@@ -227,9 +234,10 @@ export default function Index() {
             </div>
           );
         } else {
+          // Use varied in-article ad styles for better engagement
           items.push(
             <div key={`ad-${index}`} className="col-span-full">
-              <AdBanner className="h-32" />
+              <InArticleAd style={currentStyle} className="my-3" />
             </div>
           );
         }
@@ -334,10 +342,24 @@ export default function Index() {
         <FeaturedAppsCarousel contents={contents} onContentClick={handleContentClick} />
       )}
 
+      {/* In-Article Promo Strip - between sections */}
+      <section className="px-3 sm:px-4 py-4 sm:py-6">
+        <div className="container mx-auto max-w-4xl">
+          <PromoStrip />
+        </div>
+      </section>
+
       {/* Recently Added Section */}
       {contents.length > 0 && (
         <RecentlyAddedSection contents={contents} onContentClick={handleContentClick} />
       )}
+
+      {/* Content Divider Ad */}
+      <section className="px-3 sm:px-4">
+        <div className="container mx-auto max-w-4xl">
+          <ContentDividerAd variant="gradient" />
+        </div>
+      </section>
 
       <section ref={contentGridRef} className="px-3 sm:px-4 pb-12 sm:pb-20 scroll-mt-20">
         <div className="container mx-auto">
